@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+output/*
+!output/.gitkeep
+!output/print/
+output/print/*
+!output/print/.gitkeep
+scanresult/*
+!scanresult/.gitkeep
+cityviewer/.godot/
+cityviewer/data/*.json
+build/

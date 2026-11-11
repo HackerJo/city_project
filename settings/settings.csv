@@ -1,0 +1,20 @@
+﻿key;value;description_de;description_en
+language;de;Sprache der Meldungen: de oder en;Language of messages: de or en
+paper;A3;Papierformat des Rasterblatts: A3 oder A4 (quer);Paper size of the grid sheet: A3 or A4 (landscape)
+field_size_mm;30;Kantenlänge eines Rasterfeldes in mm (Kärtchen sind ein Vielfaches davon);Edge length of one grid field in mm (cards are a multiple of this)
+columns;auto;Anzahl Spalten: auto oder eine Zahl;Number of columns: auto or a number
+rows;auto;Anzahl Zeilen: auto oder eine Zahl;Number of rows: auto or a number
+world_meters_per_field;6;Größe eines Feldes in der 3D-Welt in Metern;Size of one field in the 3D world in metres
+start_view;walk;Startansicht im Viewer: walk (Rundgang) oder bird (Vogelperspektive);Start view in the viewer: walk or bird
+path_color;#b8a58a;Farbe leerer Felder (Wege) im Viewer;Colour of empty fields (paths) in the viewer
+meadow_color;#5a9a4d;Farbe der Wiese außerhalb der Stadt;Colour of the meadow outside the city
+min_marker_mm;15;Warnung, wenn ein Marker kleiner als dieser Wert ist (mm);Warn if a marker is smaller than this (mm)
+sheet_border_mm;28;Rand um das Raster (Platz für Eckmarker) in mm;Border around the grid (room for corner markers) in mm
+corner_marker_mm;20;Größe der Eckmarker in mm;Size of the corner markers in mm
+corner_offset_mm;4;Abstand der Eckmarker zum Papierrand in mm;Distance of corner markers from the paper edge in mm
+corner_marker_ids;46,47,48,49;Marker-IDs der Ecken (oben links, oben rechts, unten rechts, unten links);Marker IDs of the corners (top-left, top-right, bottom-right, bottom-left)
+aruco_dict;DICT_4X4_50;ArUco-Wörterbuch (bestimmt die maximale Zahl an Marker-IDs);ArUco dictionary (determines the maximum number of marker IDs)
+card_margin_mm;1.5;Weißer Rand am Kärtchenrand in mm;White margin at the card edge in mm
+card_arrow_mm;3;Höhe des Türpfeils auf dem Kärtchen in mm;Height of the door arrow on the card in mm
+card_name_mm;3;Höhe der Namenszeile auf dem Kärtchen in mm;Height of the name line on the card in mm
+card_quiet_zone_mm;2.5;Weiße Ruhezone um den Marker in mm (nicht zu klein wählen);White quiet zone around the marker in mm (do not make it too small)
