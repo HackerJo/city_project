@@ -1,12 +1,17 @@
 extends Node3D
 # City viewer: reads city.json (from scripts/detect_city.py) and buildings.json
-# (from scripts/generate_prints.py) and builds a walkable placeholder city.
+# (from scripts/generate_prints.py) and builds a walkable city.
+# Buildings with style "modular" are assembled from the glTF parts listed in data/parts.csv
+# (see building_builder.gd); all other buildings are shown as labelled colour blocks.
 # Two views: walk (first person) and bird (orthographic top-down view, north is up).
 # Start:  godot --path cityviewer -- <absolute path to city.json>
 # Without an argument, res://data/city.json is loaded.
 # Coordinates: x = east, z = south (north = -z). Door "N" faces -z.
 
+const BuilderScript := preload("res://scripts/building_builder.gd")
+
 const BUILDINGS_PATH := "res://data/buildings.json"
+const PARTS_PATH := "res://data/parts.csv"
 const DEFAULT_CITY_PATH := "res://data/city.json"
 const BUILDING_GAP := 0.6        # gap between buildings (metres)
 const EYE_HEIGHT := 1.7
@@ -24,7 +29,7 @@ const LABEL_MAX_PIXEL_SIZE := 0.02   # upper limit: text height = font size * pi
 const LABEL_FILL := 0.85             # text may use this share of the available width
 const LABEL_HEIGHT_FRACTION := 0.3   # text height may be this share of the available height
 const LABEL_OUTLINE := 10
-const LABEL_OFFSET := 0.08           # distance in front of a surface (metres)
+const LABEL_OFFSET := 0.2            # distance in front of a surface (metres)
 
 # Bird view
 const BIRD_HEIGHT := 150.0           # camera height (orthographic, so it only has to be above everything)
@@ -33,6 +38,7 @@ const BIRD_PAN_FRACTION := 0.8       # pan speed: share of the visible height pe
 const BIRD_MIN_SIZE := 10.0          # closest zoom (visible height in metres)
 const BIRD_MAX_ZOOM_OUT := 1.5       # farthest zoom as a multiple of the fitted size
 
+var builder := BuilderScript.new()
 var catalog := {}                # building key -> Dictionary from buildings.json
 var meters_per_field := 6.0
 var path_color := Color(0.72, 0.65, 0.54)
@@ -63,6 +69,9 @@ func _ready() -> void:
 	_build_environment()
 	_build_hud()
 	_load_catalog()
+	builder.load_parts(PARTS_PATH)
+	for message in builder.messages:
+		push_warning(message)
 	var city_path := _city_path()
 	var city = _load_json(city_path)
 	if city == null or not (city is Dictionary) or not city.has("buildings"):
@@ -128,6 +137,18 @@ func _box(size: Vector3, pos: Vector3, color: Color, collide := true) -> StaticB
 	return body
 
 
+# Invisible collision box (used for assembled buildings).
+func _collider(size: Vector3, pos: Vector3) -> void:
+	var body := StaticBody3D.new()
+	body.position = pos
+	var cs := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	cs.shape = shape
+	body.add_child(cs)
+	add_child(body)
+
+
 func _build_environment() -> void:
 	var env := Environment.new()
 	env.background_mode = Environment.BG_COLOR
@@ -163,30 +184,49 @@ func _build_city(city: Dictionary) -> void:
 	var total_d := rows * cell
 	city_size = Vector2(total_w, total_d)
 
+	# which fields are covered by buildings
+	var occupied := {}
+	for entry in city["buildings"]:
+		for dc in int(entry["width_fields"]):
+			for dr in int(entry["depth_fields"]):
+				occupied[Vector2i(int(entry["col"]) + dc, int(entry["row"]) + dr)] = true
+
 	# meadow outside the grid, path on all fields inside (empty field = path)
 	_box(Vector3(total_w + 2.0 * MEADOW_MARGIN, 0.2, total_d + 2.0 * MEADOW_MARGIN),
 		Vector3(total_w / 2.0, -0.1, total_d / 2.0), meadow_color)
 	_box(Vector3(total_w, 0.22, total_d), Vector3(total_w / 2.0, -0.09, total_d / 2.0), path_color, false)
+	if builder.is_ready():
+		builder.build_floor(self, columns, rows, cell, occupied)
 
-	var occupied := {}
 	for entry in city["buildings"]:
 		var w := int(entry["width_fields"])
 		var d := int(entry["depth_fields"])
 		var col := int(entry["col"])
 		var row := int(entry["row"])
-		for dc in w:
-			for dr in d:
-				occupied[Vector2i(col + dc, row + dr)] = true
 		var info: Dictionary = catalog.get(str(entry["key"]), {})
-		var height: float = float(info.get("height_m", DEFAULT_HEIGHT))
-		var color := DEFAULT_COLOR
-		if info.has("color"):
-			color = Color.html(str(info["color"]))
-		var size := Vector3(w * cell - BUILDING_GAP, height, d * cell - BUILDING_GAP)
-		var centre := Vector3((col + w / 2.0) * cell, height / 2.0, (row + d / 2.0) * cell)
-		_box(size, centre, color, height >= 0.5)
-		_door(centre, size, str(entry["door"]))
-		_add_labels(centre, size, str(entry.get("name", entry["key"])))
+		var label_text := str(entry.get("name", entry["key"]))
+		var cx := (col + w / 2.0) * cell
+		var cz := (row + d / 2.0) * cell
+		var lx := w * cell - BUILDING_GAP
+		var lz := d * cell - BUILDING_GAP
+
+		if str(info.get("style", "block")) == "modular" and builder.is_ready():
+			var floors := maxi(1, int(info.get("floors", 1)))
+			var built: Dictionary = builder.build_house(self, Vector2(cx, cz), lx, lz, floors, str(entry["door"]))
+			var wall_top: float = built["wall_top"]
+			var total_h: float = built["height"]
+			_collider(Vector3(lx, wall_top, lz), Vector3(cx, wall_top / 2.0, cz))
+			_add_labels(Vector3(cx, 0.0, cz), Vector3(lx, total_h, lz), label_text, wall_top)
+		else:
+			var height: float = float(info.get("height_m", DEFAULT_HEIGHT))
+			var color := DEFAULT_COLOR
+			if info.has("color"):
+				color = Color.html(str(info["color"]))
+			var size := Vector3(lx, height, lz)
+			var centre := Vector3(cx, height / 2.0, cz)
+			_box(size, centre, color, height >= 0.5)
+			_door(centre, size, str(entry["door"]))
+			_add_labels(centre, size, label_text)
 
 	_build_player(columns, rows, occupied)
 	_build_bird_view()
@@ -215,23 +255,25 @@ func _door(centre: Vector3, size: Vector3, side: String) -> void:
 
 
 # Names: on all four walls (walk view) and lying on the roof (bird view, north is up).
+# size.y is the total height (roof label); wall_height is the height of the walls (wall labels).
 # Label3D faces +Z by default; rotation about Y turns the front outwards:
 # south 0 deg, north 180 deg, east +90 deg, west -90 deg.
-func _add_labels(centre: Vector3, size: Vector3, text: String) -> void:
+func _add_labels(centre: Vector3, size: Vector3, text: String, wall_height := -1.0) -> void:
 	if text == "":
 		return
+	var wall_h := size.y if wall_height < 0.0 else wall_height
 	var roof := Vector3(centre.x, size.y + LABEL_OFFSET, centre.z)
 	_add_label(top_labels_root, text, roof, Vector3(-90, 0, 0), size.x, size.z)
 	if size.y < 0.5:
 		_add_label(labels_root, text, roof, Vector3(-90, 0, 0), minf(size.x, size.z), 0.0)
 		return
-	var y := clampf(size.y * 0.65, 0.6, 9.0)
+	var y := clampf(wall_h * 0.65, 0.6, 9.0)
 	var half_x := size.x / 2.0 + LABEL_OFFSET
 	var half_z := size.z / 2.0 + LABEL_OFFSET
-	_add_label(labels_root, text, Vector3(centre.x, y, centre.z - half_z), Vector3(0, 180, 0), size.x, size.y)
-	_add_label(labels_root, text, Vector3(centre.x, y, centre.z + half_z), Vector3(0, 0, 0), size.x, size.y)
-	_add_label(labels_root, text, Vector3(centre.x + half_x, y, centre.z), Vector3(0, 90, 0), size.z, size.y)
-	_add_label(labels_root, text, Vector3(centre.x - half_x, y, centre.z), Vector3(0, -90, 0), size.z, size.y)
+	_add_label(labels_root, text, Vector3(centre.x, y, centre.z - half_z), Vector3(0, 180, 0), size.x, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x, y, centre.z + half_z), Vector3(0, 0, 0), size.x, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x + half_x, y, centre.z), Vector3(0, 90, 0), size.z, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x - half_x, y, centre.z), Vector3(0, -90, 0), size.z, wall_h)
 
 
 func _add_label(parent: Node3D, text: String, pos: Vector3, rot_deg: Vector3, max_width: float, max_height: float) -> void:

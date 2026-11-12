@@ -1,16 +1,16 @@
-﻿id;key;name_de;name_en;width;depth;model;color;height_m;count;active
-1;well;Brunnen;Well;1;1;well.glb;#4a90d9;1.2;2;yes
-2;house;Wohnhaus;House;1;1;house.glb;#c97b4a;5;12;yes
-3;church;Kirche;Church;2;2;church.glb;#d9d9d9;14;1;yes
-4;inn;Gasthaus;Inn;2;1;inn.glb;#a0522d;6;2;yes
-5;bakery;Bäcker;Bakery;1;1;bakery.glb;#e8c170;5;3;yes
-6;butcher;Metzger;Butcher;1;1;butcher.glb;#b03a3a;5;3;yes
-7;market;Marktplatz;Market square;2;2;market.glb;#f0e68c;0.25;1;yes
-8;tanner;Gerber;Tanner;1;1;tanner.glb;#6b4f3a;5;2;yes
-9;brewery;Brauerei;Brewery;2;1;brewery.glb;#d4a017;7;1;yes
-10;smithy;Schmiede;Smithy;1;1;smithy.glb;#555555;5;2;yes
-11;stable;Stall;Stable;1;1;stable.glb;#8fbc8f;3.5;3;yes
-12;monastery;Kloster;Monastery;3;2;monastery.glb;#c4b69a;9;1;yes
-13;town_hall;Rathaus;Town hall;2;2;town_hall.glb;#b87954;9;1;yes
-14;guildhall;Zunfthaus;Guildhall;2;2;guildhall.glb;#9874a8;8;1;yes
-15;mill;Mühle;Mill;1;2;mill.glb;#c9b477;10;1;yes
+﻿id;key;name_de;name_en;width;depth;model;color;height_m;count;active;floors;style
+1;well;Brunnen;Well;1;1;well.glb;#4a90d9;1.2;2;yes;1;block
+2;house;Wohnhaus;House;1;1;house.glb;#c97b4a;5;12;yes;2;modular
+3;church;Kirche;Church;2;2;church.glb;#d9d9d9;14;1;yes;3;block
+4;inn;Gasthaus;Inn;2;1;inn.glb;#a0522d;6;2;yes;2;modular
+5;bakery;Bäcker;Bakery;1;1;bakery.glb;#e8c170;5;3;yes;2;modular
+6;butcher;Metzger;Butcher;1;1;butcher.glb;#b03a3a;5;3;yes;2;modular
+7;market;Marktplatz;Market square;2;2;market.glb;#f0e68c;0.25;1;yes;1;block
+8;tanner;Gerber;Tanner;1;1;tanner.glb;#6b4f3a;5;2;yes;2;modular
+9;brewery;Brauerei;Brewery;2;1;brewery.glb;#d4a017;7;1;yes;2;modular
+10;smithy;Schmiede;Smithy;1;1;smithy.glb;#555555;5;2;yes;1;modular
+11;stable;Stall;Stable;1;1;stable.glb;#8fbc8f;3.5;3;yes;1;modular
+12;monastery;Kloster;Monastery;3;2;monastery.glb;#c4b69a;9;1;yes;2;block
+13;town_hall;Rathaus;Town hall;2;2;town_hall.glb;#b87954;9;1;yes;2;block
+14;guildhall;Zunfthaus;Guildhall;2;2;guildhall.glb;#9874a8;8;1;yes;2;block
+15;mill;Mühle;Mill;1;2;mill.glb;#c9b477;10;1;yes;3;modular

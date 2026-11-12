@@ -87,6 +87,8 @@ class Building:
     height_m: float
     count: int
     active: bool
+    floors: int = 1
+    style: str = "block"
 
     def name(self, lang: str) -> str:
         primary, other = (self.name_de, self.name_en) if lang == "de" else (self.name_en, self.name_de)
@@ -266,6 +268,13 @@ def load_buildings(path: Path, s: Settings, messages: list) -> list:
         if width is None: problems.append(t("p_bad_int", field="width", minimum=1))
         if depth is None: problems.append(t("p_bad_int", field="depth", minimum=1))
         if count is None: problems.append(t("p_bad_int", field="count", minimum=0))
+        floors = _to_int(r.get("floors", "1") or "1", 1)
+        if floors is None:
+            problems.append(t("p_bad_int", field="floors", minimum=1))
+            floors = 1
+        style = (r.get("style", "block") or "block").lower()
+        if style not in ("block", "modular"):
+            style = "block"
         try:
             height = float((r.get("height_m", "5") or "5").replace(",", "."))
             if height < 0: raise ValueError
@@ -296,7 +305,7 @@ def load_buildings(path: Path, s: Settings, messages: list) -> list:
         if problems:
             continue
         b = Building(bid if bid is not None else -1, key, r.get("name_de", ""), r.get("name_en", ""),
-                     width, depth, r.get("model", ""), color.lower(), height, count, active)
+                     width, depth, r.get("model", ""), color.lower(), height, count, active, floors, style)
         buildings.append(b)
         if bid is None:
             pending.append((b, r))

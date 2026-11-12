@@ -216,7 +216,7 @@ def write_data_files(project: Project, out_dir: Path) -> None:
         "meadow_color": s.meadow_color,
         "buildings": [
             {"id": b.id, "key": b.key, "name": b.name(s.language), "name_de": b.name_de, "name_en": b.name_en,
-             "width": b.width, "depth": b.depth, "model": b.model, "color": b.color, "height_m": b.height_m}
+             "width": b.width, "depth": b.depth, "model": b.model, "color": b.color, "height_m": b.height_m, "floors": b.floors, "style": b.style}
             for b in project.buildings if b.active
         ],
     }
