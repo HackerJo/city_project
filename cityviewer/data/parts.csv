@@ -1,10 +1,10 @@
 role;file;facing;ridge_axis;expected_size_whd;note
-floor;Floor_Unevenbrick.gltf;+z;z;2 x 0 x 2;path tile (several per field)
+floor;Floor_UnevenBrick.gltf;+z;z;2 x 0 x 2;path tile (several per field)
 wall;Wall_Plaster_Straight_Base.gltf;+z;z;2 x 3.1 x 0.4;plain wall piece
 wall_door;Wall_Plaster_Door_Flat.gltf;+z;z;2 x 3.1 x 0.4;door piece (ground floor of the door wall)
 wall_window_wide;Wall_Plaster_Window_Wide_Flat.gltf;+z;z;2 x 3.1 x 0.4;wide window (ground floor)
 wall_window_thin;Window_Thin_Flat1.gltf;+z;z;2 x 3.1 x 0.4;thin window (upper floors)
 roof;Roof_RoundTiles_6x10.gltf;+z;z;8.2 x 5.7 x 11.9;gable roof, ridge along the model z axis (ridge_axis)
-roof_tower;Roof_Tower_RoundTiles.gltf;+z;z;5.7 x 7.4 x 5.4;tower roof (not used yet)
+roof_tower;Roof_Tower_RoundTiles.gltf;+z;z;5.7 x 7.4 x 5.4;tower roof
 gable_large;Roof_Front_Brick6.gltf;+z;z;6.7 x 4.5 x 1.1;gable piece for wall lengths >= 5 m
 gable_small;Roof_Front_Brick4.gltf;+z;z;4.4 x 3.1 x 1.1;gable piece for shorter walls

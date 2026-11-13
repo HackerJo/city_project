@@ -1,7 +1,7 @@
 ﻿id;key;name_de;name_en;width;depth;model;color;height_m;count;active;floors;style
 1;well;Brunnen;Well;1;1;well.glb;#4a90d9;1.2;2;yes;1;block
 2;house;Wohnhaus;House;1;1;house.glb;#c97b4a;5;12;yes;2;modular
-3;church;Kirche;Church;2;2;church.glb;#d9d9d9;14;1;yes;3;block
+3;church;Kirche;Church;2;2;church.glb;#d9d9d9;14;1;yes;3;modular
 4;inn;Gasthaus;Inn;2;1;inn.glb;#a0522d;6;2;yes;2;modular
 5;bakery;Bäcker;Bakery;1;1;bakery.glb;#e8c170;5;3;yes;2;modular
 6;butcher;Metzger;Butcher;1;1;butcher.glb;#b03a3a;5;3;yes;2;modular

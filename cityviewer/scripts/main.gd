@@ -212,11 +212,19 @@ func _build_city(city: Dictionary) -> void:
 
 		if str(info.get("style", "block")) == "modular" and builder.is_ready():
 			var floors := maxi(1, int(info.get("floors", 1)))
-			var built: Dictionary = builder.build_house(self, Vector2(cx, cz), lx, lz, floors, str(entry["door"]))
+			var built: Dictionary
+			if str(entry["key"]) == "church":
+				built = builder.build_church(self, Vector2(cx, cz), lx, floors, str(entry["door"]))
+			else:
+				built = builder.build_house(self, Vector2(cx, cz), lx, lz, floors, str(entry["door"]))
 			var wall_top: float = built["wall_top"]
 			var total_h: float = built["height"]
-			_collider(Vector3(lx, wall_top, lz), Vector3(cx, wall_top / 2.0, cz))
-			_add_labels(Vector3(cx, 0.0, cz), Vector3(lx, total_h, lz), label_text, wall_top)
+			if built.has("colliders"):
+				for c in built["colliders"]:
+					_collider(c["size"], c["pos"])
+			else:
+				_collider(Vector3(lx, wall_top, lz), Vector3(cx, wall_top / 2.0, cz))
+			_add_labels(Vector3(cx, 0.0, cz), Vector3(lx, total_h, lz), label_text, wall_top, float(built.get("wall_label_width", -1.0)))
 		else:
 			var height: float = float(info.get("height_m", DEFAULT_HEIGHT))
 			var color := DEFAULT_COLOR
@@ -258,10 +266,11 @@ func _door(centre: Vector3, size: Vector3, side: String) -> void:
 # size.y is the total height (roof label); wall_height is the height of the walls (wall labels).
 # Label3D faces +Z by default; rotation about Y turns the front outwards:
 # south 0 deg, north 180 deg, east +90 deg, west -90 deg.
-func _add_labels(centre: Vector3, size: Vector3, text: String, wall_height := -1.0) -> void:
+func _add_labels(centre: Vector3, size: Vector3, text: String, wall_height := -1.0, wall_label_width := -1.0) -> void:
 	if text == "":
 		return
 	var wall_h := size.y if wall_height < 0.0 else wall_height
+	var label_w := size.x if wall_label_width < 0.0 else wall_label_width
 	var roof := Vector3(centre.x, size.y + LABEL_OFFSET, centre.z)
 	_add_label(top_labels_root, text, roof, Vector3(-90, 0, 0), size.x, size.z)
 	if size.y < 0.5:
@@ -270,10 +279,10 @@ func _add_labels(centre: Vector3, size: Vector3, text: String, wall_height := -1
 	var y := clampf(wall_h * 0.65, 0.6, 9.0)
 	var half_x := size.x / 2.0 + LABEL_OFFSET
 	var half_z := size.z / 2.0 + LABEL_OFFSET
-	_add_label(labels_root, text, Vector3(centre.x, y, centre.z - half_z), Vector3(0, 180, 0), size.x, wall_h)
-	_add_label(labels_root, text, Vector3(centre.x, y, centre.z + half_z), Vector3(0, 0, 0), size.x, wall_h)
-	_add_label(labels_root, text, Vector3(centre.x + half_x, y, centre.z), Vector3(0, 90, 0), size.z, wall_h)
-	_add_label(labels_root, text, Vector3(centre.x - half_x, y, centre.z), Vector3(0, -90, 0), size.z, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x, y, centre.z - half_z), Vector3(0, 180, 0), label_w, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x, y, centre.z + half_z), Vector3(0, 0, 0), label_w, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x + half_x, y, centre.z), Vector3(0, 90, 0), label_w if wall_label_width >= 0.0 else size.z, wall_h)
+	_add_label(labels_root, text, Vector3(centre.x - half_x, y, centre.z), Vector3(0, -90, 0), label_w if wall_label_width >= 0.0 else size.z, wall_h)
 
 
 func _add_label(parent: Node3D, text: String, pos: Vector3, rot_deg: Vector3, max_width: float, max_height: float) -> void:

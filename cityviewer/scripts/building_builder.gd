@@ -3,16 +3,24 @@ extends RefCounted
 # The size of every part is measured from its meshes, so the origin of a model does not matter.
 # Each part is placed by its bottom centre. "facing" (+z or -z) is the model side that looks outwards.
 #
-# Wall:  pieces of the "wall" template are repeated along each side; the last step can stretch or
-#        compress them slightly so that the wall length is met exactly (FIT_WALL_LENGTH).
+# build_house:  rectangular building (walls, door, windows, gable roof, gables)
+# build_church: cross-shaped plan from a 3 x 3 grid (corners empty), tower = arm on the door side
+#
+# Wall:  pieces of the "wall" template are repeated along each side; they are stretched or
+#        compressed slightly so that the wall length is met exactly (FIT_WALL_LENGTH).
 # Roof:  gable roof, ridge along the longer side (square: perpendicular to the door wall).
-# Gable: triangular piece on the two walls at the ridge ends.
 
 const PARTS_DIR := "res://models/parts/"
 const OVERHANG_ACROSS := 0.5     # roof overhang at the eaves (metres)
 const OVERHANG_ALONG := 0.7      # roof overhang at the gables (beams stick out there)
+const TOWER_ROOF_SINK := 0.2     # tower roof starts this far below the top of the tower walls
 const FIT_WALL_LENGTH := true    # true: stretch/compress pieces to the exact wall length
 const FLOOR_Y := 0.03            # height of the path tiles above the meadow
+
+# Imported glTF materials are often metallic. Without reflections (we have no sky or probe)
+# metallic surfaces look black with white highlights. This switches the metal off.
+const NEUTRALIZE_METAL := true
+const DEBUG_MATERIALS := true    # print the material data of every part to the console
 
 var parts := {}                  # role -> {"scene", "aabb", "facing", "ridge"}
 var messages: Array = []
@@ -57,6 +65,7 @@ func load_parts(csv_path: String) -> void:
 			continue
 		var boxes: Array = []
 		_collect(probe, Transform3D.IDENTITY, boxes)
+		_fix_materials(probe, role)
 		probe.free()
 		parts[role] = {"scene": scene, "aabb": _merge(boxes),
 			"facing": _cell(row, i_facing, "+z"), "ridge": _cell(row, i_ridge, "z")}
@@ -79,6 +88,34 @@ func _collect(node: Node, parent_xf: Transform3D, boxes: Array) -> void:
 			boxes.append(xf * mesh.get_aabb())
 	for child in node.get_children():
 		_collect(child, xf, boxes)
+
+
+# Materials are resources shared by all instances of a part, so this runs once per part.
+func _fix_materials(node: Node, role: String) -> void:
+	if node is MeshInstance3D:
+		var mesh := (node as MeshInstance3D).mesh
+		if mesh != null:
+			for s in mesh.get_surface_count():
+				var m := mesh.surface_get_material(s)
+				if m is BaseMaterial3D:
+					var bm := m as BaseMaterial3D
+					if DEBUG_MATERIALS:
+						var tex := "none"
+						if bm.albedo_texture != null:
+							tex = bm.albedo_texture.resource_path
+						print("[parts] %s surface %d: albedo=%s color=%s texture=%s metallic=%.2f roughness=%.2f metal_tex=%s vertex_color=%s" % [
+							role, s, str(bm.albedo_color), "", tex, bm.metallic, bm.roughness,
+							str(bm.metallic_texture != null), str(bm.vertex_color_use_as_albedo)])
+					if NEUTRALIZE_METAL:
+						bm.metallic = 0.0
+						bm.metallic_texture = null
+						bm.roughness = 0.9
+						bm.roughness_texture = null
+						bm.metallic_specular = 0.2
+				elif DEBUG_MATERIALS:
+					print("[parts] %s surface %d: no BaseMaterial3D (%s)" % [role, s, str(m)])
+	for child in node.get_children():
+		_fix_materials(child, role)
 
 
 func _merge(boxes: Array) -> AABB:
@@ -145,13 +182,18 @@ func _wall_point(side: String, t: float, lx: float, lz: float, thick: float) -> 
 	return Vector3(-lx / 2.0 + thick / 2.0, 0.0, t)
 
 
+func _window_role(floor_index: int) -> String:
+	var window := "wall_window_wide" if floor_index == 0 else "wall_window_thin"
+	if not parts.has(window):
+		window = "wall_window_thin" if parts.has("wall_window_thin") else "wall"
+	return window
+
+
 # Door in the middle of the door wall (ground floor); windows on every second piece, mirrored,
 # never at the corners and never next to the door. Ground floor: wide windows, upper floors: thin.
 func _wall_role(is_door_wall: bool, i: int, n: int, floor_index: int) -> String:
 	var middle := int(n / 2)
-	var window := "wall_window_wide" if floor_index == 0 else "wall_window_thin"
-	if not parts.has(window):
-		window = "wall_window_thin" if parts.has("wall_window_thin") else "wall"
+	var window := _window_role(floor_index)
 	if is_door_wall and i == middle:
 		if floor_index == 0:
 			return "wall_door"
@@ -174,7 +216,38 @@ func _ridge_axis(lx: float, lz: float, door_side: String) -> String:
 	return "z" if (door_side == "N" or door_side == "S") else "x"
 
 
-# centre: building centre (x, z) in world coordinates. Returns {"wall_top": float, "height": float}.
+# Gable roof centred on c (x, z). span = width across the ridge (without overhang),
+# ridge_len = length along the ridge including overhangs. Returns tan(pitch).
+func _add_roof(root: Node3D, c: Vector2, ridge_world: String, span: float, ridge_len: float, wall_top: float) -> float:
+	var roof: Dictionary = parts["roof"]
+	var rbox: AABB = roof["aabb"]
+	var ridge_native := String(roof["ridge"])
+	var span_native := rbox.size.x if ridge_native == "z" else rbox.size.z
+	var len_native := rbox.size.z if ridge_native == "z" else rbox.size.x
+	var tan_pitch := rbox.size.y / (span_native / 2.0)
+	var across := (span + 2.0 * OVERHANG_ACROSS) / span_native
+	var along := ridge_len / len_native
+	var roof_scale := Vector3(across, across, along) if ridge_native == "z" else Vector3(along, across, across)
+	var roof_rot := 0.0 if ridge_native == ridge_world else 90.0
+	_place(root, "roof", Vector3(c.x, wall_top - OVERHANG_ACROSS * tan_pitch, c.y), roof_rot, roof_scale)
+	return tan_pitch
+
+
+# Triangular gable piece standing on the wall top; pos = centre of the wall.
+func _add_gable(root: Node3D, side: String, pos: Vector3, span: float, tan_pitch: float, wall_top: float) -> void:
+	var role := "gable_large"
+	if not parts.has("gable_large") or (span < 5.0 and parts.has("gable_small")):
+		role = "gable_small"
+	if not parts.has(role):
+		return
+	var gbox: AABB = parts[role]["aabb"]
+	var g_scale := Vector3(span / gbox.size.x, (span / 2.0 * tan_pitch) / gbox.size.y, 1.0)
+	pos.y = wall_top
+	_place(root, role, pos, _side_rotation(side, role), g_scale)
+
+
+# centre: building centre (x, z) in world coordinates.
+# Returns {"wall_top": float, "height": float}.
 func build_house(parent: Node3D, centre: Vector2, lx: float, lz: float, floors: int, door_side: String) -> Dictionary:
 	var wall_box: AABB = parts["wall"]["aabb"]
 	var wall_len := wall_box.size.x
@@ -192,45 +265,119 @@ func build_house(parent: Node3D, centre: Vector2, lx: float, lz: float, floors: 
 			for i in n:
 				var role := _wall_role(side == door_side, i, n, floor_index)
 				var role_box: AABB = parts[role]["aabb"]
-				var role_len := role_box.size.x
 				var t := -length / 2.0 + (i + 0.5) * piece_len
 				var pos := _wall_point(side, t, lx, lz, thick)
 				pos.y = floor_index * wall_h
-				_place(root, role, pos, _side_rotation(side, role), Vector3(piece_len / role_len, 1.0, 1.0))
+				_place(root, role, pos, _side_rotation(side, role), Vector3(piece_len / role_box.size.x, 1.0, 1.0))
 
 	var wall_top := floors * wall_h
 	var result := {"wall_top": wall_top, "height": wall_top}
 	if not parts.has("roof"):
 		return result
 
-	var roof: Dictionary = parts["roof"]
-	var rbox: AABB = roof["aabb"]
-	var ridge_native := String(roof["ridge"])
 	var ridge_world := _ridge_axis(lx, lz, door_side)
 	var l_ridge := lx if ridge_world == "x" else lz
 	var l_span := lz if ridge_world == "x" else lx
-	var span_native := rbox.size.x if ridge_native == "z" else rbox.size.z
-	var len_native := rbox.size.z if ridge_native == "z" else rbox.size.x
-	var tan_pitch := rbox.size.y / (span_native / 2.0)
-	var across := (l_span + 2.0 * OVERHANG_ACROSS) / span_native
-	var along := (l_ridge + 2.0 * OVERHANG_ALONG) / len_native
-	var roof_scale := Vector3(across, across, along) if ridge_native == "z" else Vector3(along, across, across)
-	var roof_rot := 0.0 if ridge_native == ridge_world else 90.0
-	_place(root, "roof", Vector3(0.0, wall_top - OVERHANG_ACROSS * tan_pitch, 0.0), roof_rot, roof_scale)
+	var tan_pitch := _add_roof(root, Vector2.ZERO, ridge_world, l_span, l_ridge + 2.0 * OVERHANG_ALONG, wall_top)
 	result["height"] = wall_top + (l_span / 2.0) * tan_pitch
-
-	var gable_role := "gable_large"
-	if not parts.has("gable_large") or (l_span < 5.0 and parts.has("gable_small")):
-		gable_role = "gable_small"
-	if parts.has(gable_role):
-		var gbox: AABB = parts[gable_role]["aabb"]
-		var g_scale := Vector3(l_span / gbox.size.x, (l_span / 2.0 * tan_pitch) / gbox.size.y, 1.0)
-		var end_sides := ["N", "S"] if ridge_world == "z" else ["E", "W"]
-		for side in end_sides:
-			var pos := _wall_point(side, 0.0, lx, lz, thick)
-			pos.y = wall_top
-			_place(root, gable_role, pos, _side_rotation(side, gable_role), g_scale)
+	var end_sides := ["N", "S"] if ridge_world == "z" else ["E", "W"]
+	for side in end_sides:
+		_add_gable(root, side, _wall_point(side, 0.0, lx, lz, thick), l_span, tan_pitch, wall_top)
 	return result
+
+
+# ---------------------------------------------------------------------------------------------
+# Church: rectangular block (size x size). The door is in the middle of one side; on both sides
+# of the door a tower rises out of the corner. Local layout with the door in the south (z+);
+# the whole building is rotated to the real door side.
+# Body: "floors" storeys (3 = ground floor + 2 upper floors).
+# Towers: floors + TOWER_EXTRA_FLOORS storeys, CHURCH_TOWER_PIECES wall pieces wide.
+# Each side has CHURCH_PIECES pieces: tower, centre part (door), tower.
+# ---------------------------------------------------------------------------------------------
+const TOWER_EXTRA_FLOORS := 3
+const CHURCH_PIECES := 7
+const CHURCH_TOWER_PIECES := 2
+const CHURCH_GABLE_INSET := 0.6      # front gable is set back behind the tower faces (metres)
+
+
+func _place_wall(root: Node3D, role: String, pos: Vector3, side: String, piece_len: float) -> void:
+	var role_box: AABB = parts[role]["aabb"]
+	_place(root, role, pos, _side_rotation(side, role), Vector3(piece_len / role_box.size.x, 1.0, 1.0))
+
+
+func build_church(parent: Node3D, centre: Vector2, size: float, floors: int, door_side: String) -> Dictionary:
+	var wall_box: AABB = parts["wall"]["aabb"]
+	var wall_h := wall_box.size.y
+	var thick := wall_box.size.z
+	var body_floors := maxi(1, floors)
+	var tower_floors := body_floors + TOWER_EXTRA_FLOORS
+	var body_top := body_floors * wall_h
+	var tower_top := tower_floors * wall_h
+	var n := CHURCH_PIECES
+	var piece_len := size / float(n)
+	var tw := CHURCH_TOWER_PIECES * piece_len
+	var half := size / 2.0
+
+	var door_rot := 0.0
+	match door_side:
+		"N":
+			door_rot = 180.0
+		"E":
+			door_rot = 90.0
+		"W":
+			door_rot = -90.0
+	var root := Node3D.new()
+	root.position = Vector3(centre.x, 0.0, centre.y)
+	root.rotation_degrees = Vector3(0.0, door_rot, 0.0)
+	parent.add_child(root)
+
+	# outer walls: towers go up to tower_floors, the rest to body_floors
+	for side in ["N", "S", "E", "W"]:
+		for i in n:
+			var in_tower := false
+			if side == "S":
+				in_tower = i < CHURCH_TOWER_PIECES or i >= n - CHURCH_TOWER_PIECES
+			elif side == "E" or side == "W":
+				in_tower = i >= n - CHURCH_TOWER_PIECES
+			var storeys := tower_floors if in_tower else body_floors
+			var t := -half + (i + 0.5) * piece_len
+			for floor_index in storeys:
+				var role := _wall_role(side == "S", i, n, floor_index)
+				var pos := _wall_point(side, t, size, size, thick)
+				pos.y = floor_index * wall_h
+				_place_wall(root, role, pos, side, piece_len)
+
+	# inner faces and back faces of the towers above the body
+	for sx in [-1.0, 1.0]:
+		var inner_side := "E" if sx < 0.0 else "W"
+		for floor_index in range(body_floors, tower_floors):
+			for k in CHURCH_TOWER_PIECES:
+				var along := (k + 0.5) * piece_len
+				var inner := Vector3(sx * (half - tw + thick / 2.0), floor_index * wall_h, half - tw + along)
+				_place_wall(root, "wall", inner, inner_side, piece_len)
+				var back := Vector3(sx * (half - along), floor_index * wall_h, half - tw + thick / 2.0)
+				_place_wall(root, "wall", back, "N", piece_len)
+
+	var height := tower_top
+	if parts.has("roof"):
+		var tan_pitch := _add_roof(root, Vector2(0.0, -OVERHANG_ALONG / 2.0), "z", size, size + OVERHANG_ALONG, body_top)
+		_add_gable(root, "N", _wall_point("N", 0.0, size, size, thick), size, tan_pitch, body_top)
+		var front := _wall_point("S", 0.0, size, size, thick)
+		front.z -= CHURCH_GABLE_INSET
+		_add_gable(root, "S", front, size, tan_pitch, body_top)
+	if parts.has("roof_tower"):
+		var tb: AABB = parts["roof_tower"]["aabb"]
+		var sxs := (tw + 2.0 * OVERHANG_ACROSS) / tb.size.x
+		var szs := (tw + 2.0 * OVERHANG_ACROSS) / tb.size.z
+		var sys := (sxs + szs) / 2.0
+		for side_x in [-1.0, 1.0]:
+			var tower_centre := Vector3(side_x * (half - tw / 2.0), tower_top - TOWER_ROOF_SINK, half - tw / 2.0)
+			_place(root, "roof_tower", tower_centre, 0.0, Vector3(sxs, sys, szs))
+		height = tower_top - TOWER_ROOF_SINK + tb.size.y * sys
+
+	var colliders: Array = [{"size": Vector3(size, tower_top, size),
+		"pos": Vector3(centre.x, tower_top / 2.0, centre.y)}]
+	return {"wall_top": body_top, "height": height, "colliders": colliders}
 
 
 # Path tiles on all free fields as one MultiMesh. Returns false if the floor part is not available.
