@@ -9,6 +9,7 @@ extends Node3D
 # Coordinates: x = east, z = south (north = -z). Door "N" faces -z.
 
 const BuilderScript := preload("res://scripts/building_builder.gd")
+const CityWallScript := preload("res://scripts/city_wall.gd")
 
 const BUILDINGS_PATH := "res://data/buildings.json"
 const PARTS_PATH := "res://data/parts.csv"
@@ -196,7 +197,13 @@ func _build_city(city: Dictionary) -> void:
 		Vector3(total_w / 2.0, -0.1, total_d / 2.0), meadow_color)
 	_box(Vector3(total_w, 0.22, total_d), Vector3(total_w / 2.0, -0.09, total_d / 2.0), path_color, false)
 	if builder.is_ready():
-		builder.build_floor(self, columns, rows, cell, occupied)
+		var floor_blocked := occupied.duplicate()
+		for entry in city["buildings"]:
+			if builder.leaves_floor_open(str(entry["key"])):
+				for dc in int(entry["width_fields"]):
+					for dr in int(entry["depth_fields"]):
+						floor_blocked.erase(Vector2i(int(entry["col"]) + dc, int(entry["row"]) + dr))
+		builder.build_floor(self, columns, rows, cell, floor_blocked)
 
 	for entry in city["buildings"]:
 		var w := int(entry["width_fields"])
@@ -210,13 +217,10 @@ func _build_city(city: Dictionary) -> void:
 		var lx := w * cell - BUILDING_GAP
 		var lz := d * cell - BUILDING_GAP
 
-		if str(info.get("style", "block")) == "modular" and builder.is_ready():
+		if str(info.get("style", "block")) == "modular" and builder.can_build(str(entry["key"])):
 			var floors := maxi(1, int(info.get("floors", 1)))
 			var built: Dictionary
-			if str(entry["key"]) == "church":
-				built = builder.build_church(self, Vector2(cx, cz), lx, floors, str(entry["door"]))
-			else:
-				built = builder.build_house(self, Vector2(cx, cz), lx, lz, floors, str(entry["door"]))
+			built = builder.build_building(str(entry["key"]), self, Vector2(cx, cz), lx, lz, floors, str(entry["door"]))
 			var wall_top: float = built["wall_top"]
 			var total_h: float = built["height"]
 			if built.has("colliders"):
@@ -236,6 +240,7 @@ func _build_city(city: Dictionary) -> void:
 			_door(centre, size, str(entry["door"]))
 			_add_labels(centre, size, label_text)
 
+	CityWallScript.new().build(self, total_w, total_d)
 	_build_player(columns, rows, occupied)
 	_build_bird_view()
 

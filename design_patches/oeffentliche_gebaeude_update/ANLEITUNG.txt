@@ -1,0 +1,24 @@
+OEFFENTLICHE GEBAEUDE - KONSOLIDIERTES UPDATE
+
+1. Den gesamten Ordner oeffentliche_gebaeude_update direkt in city_project ablegen.
+2. Viewer und Godot-Editor schliessen.
+3. Im Projektordner ausfuehren:
+   python .\oeffentliche_gebaeude_update\install_update.py
+4. Viewer neu starten.
+
+Das Installationsskript sichert die bisherigen Dateien und buildings.json.
+Es ersetzt building_builder.gd, main.gd, parts.csv und settings/buildings.csv.
+main.gd und parts.csv entsprechen inhaltlich den hochgeladenen Versionen.
+Es setzt monastery, town_hall und guildhall in buildings.json auf modular.
+Geschosse: Kloster 2, Rathaus 3, Zunfthaus 3; Klostertuerme 6.
+IDs, Grundflaechen, Anzahl und andere Katalogeinstellungen bleiben unveraendert.
+Keine neuen Modelle, Texturen oder Python-Bibliotheken noetig.
+
+Die Uhr ist aus einfachen Meshes aufgebaut, statisch auf 10:10 Uhr.
+Ihre Helligkeit ist beleuchtungsunabhaengig, damit sie lesbar bleibt.
+Kloster und Rathaus verwenden sich ueberschneidende Dach-/Turmteile;
+Innenraeume und exakte Dachausschnitte sind nicht umgesetzt.
+Die sichtbare Klosterform folgt der Rasterbelegung und der erkannten Tuerseite.
+
+WICHTIG: Alte Patchskripte nicht erneut auf die konsolidierte Fassung anwenden.
+Das Paket wurde nicht in Godot ausgefuehrt. Installer an Testprojekt geprueft.

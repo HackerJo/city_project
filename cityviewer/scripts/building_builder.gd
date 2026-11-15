@@ -42,6 +42,7 @@ func load_parts(csv_path: String) -> void:
 	var i_file := header.find("file")
 	var i_facing := header.find("facing")
 	var i_ridge := header.find("ridge_axis")
+	var i_yaw := header.find("yaw_deg")
 	if i_role < 0 or i_file < 0:
 		messages.append("parts.csv needs the columns role and file")
 		return
@@ -68,7 +69,7 @@ func load_parts(csv_path: String) -> void:
 		_fix_materials(probe, role)
 		probe.free()
 		parts[role] = {"scene": scene, "aabb": _merge(boxes),
-			"facing": _cell(row, i_facing, "+z"), "ridge": _cell(row, i_ridge, "z")}
+			"facing": _cell(row, i_facing, "+z"), "ridge": _cell(row, i_ridge, "z"), "yaw": float(_cell(row, i_yaw, "0"))}
 
 
 func _cell(row: PackedStringArray, index: int, fallback: String) -> String:
@@ -151,7 +152,7 @@ func _place(parent: Node3D, role: String, cb: Vector3, rot_deg: float, scale: Ve
 		return
 	var holder := Node3D.new()
 	holder.add_child(inst)
-	holder.basis = Basis(Vector3.UP, deg_to_rad(rot_deg)) * Basis.IDENTITY.scaled(scale)
+	holder.basis = Basis(Vector3.UP, deg_to_rad(rot_deg + float(part.get("yaw", 0.0)))) * Basis.IDENTITY.scaled(scale)
 	var native_cb := Vector3(box.get_center().x, box.position.y, box.get_center().z)
 	holder.position = cb - holder.basis * native_cb
 	parent.add_child(holder)
@@ -380,7 +381,126 @@ func build_church(parent: Node3D, centre: Vector2, size: float, floors: int, doo
 	return {"wall_top": body_top, "height": height, "colliders": colliders}
 
 
-# Path tiles on all free fields as one MultiMesh. Returns false if the floor part is not available.
+# ---------------------------------------------------------------------------------------------
+# Market square and well
+# Market: one corner piece in each corner of the building area (the rest stays open path).
+#   The corner model is a corner with arms to the east and south (seen from above, north up);
+#   it is turned by 0 / -90 / 180 / 90 degrees for NW / NE / SE / SW.
+# Well: four U-shaped stair pieces (open to the west in the model) on the four sides of the
+#   centre, each turned so that its opening faces the centre; optional water disc in the middle.
+# If a model is rotated wrongly, correct it with the column yaw_deg in parts.csv.
+# ---------------------------------------------------------------------------------------------
+const WELL_WATER := true
+const WELL_WATER_RADIUS := 0.8
+const WELL_WATER_COLOR := Color(0.25, 0.5, 0.8)
+
+
+func has_role(role: String) -> bool:
+	return parts.has(role)
+
+
+func can_build(key: String) -> bool:
+	if key == "market":
+		return parts.has("market_corner")
+	if key == "well":
+		return parts.has("well_stairs")
+	return is_ready()
+
+
+# Market and well stand on path tiles (the fields are not blocked for the floor).
+func leaves_floor_open(key: String) -> bool:
+	return (key == "market" and parts.has("market_corner")) or (key == "well" and parts.has("well_stairs"))
+
+
+func build_building(key: String, parent: Node3D, centre: Vector2, lx: float, lz: float, floors: int, door_side: String) -> Dictionary:
+	if key == "church":
+		return build_church(parent, centre, lx, floors, door_side)
+	if key == "monastery":
+		return build_monastery(parent, centre, lx, lz, floors, door_side)
+	if key == "town_hall":
+		return build_town_hall(parent, centre, lx, lz, floors, door_side)
+	if key == "market":
+		return build_market(parent, centre, lx, lz)
+	if key == "well":
+		return build_well(parent, centre, lx, lz)
+	return build_house(parent, centre, lx, lz, floors, door_side)
+
+
+func build_market(parent: Node3D, centre: Vector2, lx: float, lz: float) -> Dictionary:
+	var box: AABB = parts["market_corner"]["aabb"]
+	var corners := [[-1.0, -1.0, 0.0], [1.0, -1.0, -90.0], [1.0, 1.0, 180.0], [-1.0, 1.0, 90.0]]
+	var colliders: Array = []
+	for c in corners:
+		var dx: float = c[0] * (lx / 2.0 - box.size.x / 2.0)
+		var dz: float = c[1] * (lz / 2.0 - box.size.z / 2.0)
+		var rot: float = c[2]
+		_place(parent, "market_corner", Vector3(centre.x + dx, 0.0, centre.y + dz), rot, Vector3.ONE)
+		colliders.append({"size": box.size, "pos": Vector3(centre.x + dx, box.size.y / 2.0, centre.y + dz)})
+	return {"wall_top": 0.0, "height": 0.0, "colliders": colliders}
+
+
+func build_well(parent: Node3D, centre: Vector2, lx: float, lz: float) -> Dictionary:
+	var box: AABB = parts["well_stairs"]["aabb"]
+	var yaw := float(parts["well_stairs"].get("yaw", 0.0))
+	# The model's native opening is along Z, not X.
+	var correction := -90.0
+	var angle := deg_to_rad(correction + yaw)
+	var extent_x := absf(cos(angle)) * box.size.x + absf(sin(angle)) * box.size.z
+	var extent_z := absf(sin(angle)) * box.size.x + absf(cos(angle)) * box.size.z
+	var offset := extent_x / 2.0
+	var colliders: Array = []
+	for sign_x in [-1.0, 1.0]:
+		var turn := correction if sign_x > 0.0 else correction + 180.0
+		var pos := Vector3(centre.x + sign_x * offset, 0.0, centre.y)
+		_place(parent, "well_stairs", pos, turn, Vector3.ONE)
+		colliders.append({"size": Vector3(extent_x, box.size.y, extent_z),
+			"pos": pos + Vector3(0.0, box.size.y / 2.0, 0.0)})
+	if WELL_WATER:
+		var water := MeshInstance3D.new()
+		var mesh := BoxMesh.new()
+		# Water extends underneath the stone rim, hiding the exact seam.
+		mesh.size = Vector3(2.0 * extent_x - 0.2, 0.06, extent_z - 0.2)
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = WELL_WATER_COLOR
+		mesh.material = mat
+		water.mesh = mesh
+		water.position = Vector3(centre.x, box.size.y * 0.45, centre.y)
+		parent.add_child(water)
+	# Floating tower roof above the well; no support elements.
+	var well_total_height := box.size.y
+	if parts.has("roof_tower"):
+		var roof_box: AABB = parts["roof_tower"]["aabb"]
+		if roof_box.size.x > 0.01 and roof_box.size.y > 0.01 and roof_box.size.z > 0.01:
+			var roof_width := 2.0 * extent_x + 0.6
+			var roof_depth := extent_z + 0.6
+			var roof_sx := roof_width / roof_box.size.x
+			var roof_sz := roof_depth / roof_box.size.z
+			var roof_sy := minf(roof_sx, roof_sz)
+			var roof_bottom := maxf(3.0, box.size.y + 1.6)
+			# Four slender posts, grounded at the outer corners of the well.
+			if parts.has("well_support"):
+				var post_box: AABB = parts["well_support"]["aabb"]
+				if post_box.size.y > 0.01:
+					var post_scale := Vector3(1.0, roof_bottom / post_box.size.y, 1.0)
+					var post_x := maxf(0.0, extent_x - post_box.size.x / 2.0)
+					var post_z := maxf(0.0, extent_z / 2.0 - post_box.size.z / 2.0)
+					var post_corners := [[-1.0, -1.0, 0.0], [1.0, -1.0, -90.0],
+						[1.0, 1.0, 180.0], [-1.0, 1.0, 90.0]]
+					for corner in post_corners:
+						var post_pos := Vector3(centre.x + float(corner[0]) * post_x,
+							0.0, centre.y + float(corner[1]) * post_z)
+						_place(parent, "well_support", post_pos, float(corner[2]), post_scale)
+			else:
+				push_warning("Brunnenstuetzen fehlen: Rolle well_support nicht geladen.")
+			_place(parent, "roof_tower", Vector3(centre.x, roof_bottom, centre.y), 0.0,
+				Vector3(roof_sx, roof_sy, roof_sz))
+			well_total_height = roof_bottom + roof_box.size.y * roof_sy
+	else:
+		push_warning("Brunnendach fehlt: Rolle roof_tower konnte nicht geladen werden.")
+	return {"wall_top": box.size.y, "height": well_total_height, "colliders": colliders,
+		"wall_label_width": 2.0 * extent_x}
+
+
 func build_floor(parent: Node3D, columns: int, rows: int, cell: float, occupied: Dictionary) -> bool:
 	if not parts.has("floor"):
 		return false
@@ -421,3 +541,195 @@ func build_floor(parent: Node3D, columns: int, rows: int, cell: float, occupied:
 	mmi.multimesh = mm
 	parent.add_child(mmi)
 	return true
+
+
+# Public buildings: local front is +Z; rotate once to the detected door side.
+func _public_rotation(side: String) -> float:
+	match side:
+		"N": return 180.0
+		"E": return 90.0
+		"W": return -90.0
+	return 0.0
+
+
+func _public_wall_run(root: Node3D, a: Vector3, side: String, length: float, first_floor: int, end_floor: int, door: bool, solid_top := false) -> void:
+	if length < 0.01:
+		return
+	var wb: AABB = parts["wall"]["aabb"]
+	var n := maxi(1, int(round(length / wb.size.x)))
+	if door and n % 2 == 0:
+		n += 1
+	var step := length / float(n)
+	for f in range(first_floor, end_floor):
+		for i in range(n):
+			var role := _wall_role(door, i, n, f)
+			# Public walls get windows even on short two-piece stretches.
+			if not door and n <= 2:
+				role = _window_role(f)
+			if solid_top and f == end_floor - 1:
+				role = "wall"
+			var pos := a
+			var t := -length / 2.0 + (float(i) + 0.5) * step
+			if side == "N" or side == "S":
+				pos.x += t
+			else:
+				pos.z += t
+			pos.y = float(f) * wb.size.y
+			# Window_Thin_Flat1 is an insert, not a complete closed wall.
+			if role == "wall_window_thin":
+				_place_wall(root, "wall", pos, side, step)
+				match side:
+					"N": pos.z -= 0.03
+					"S": pos.z += 0.03
+					"E": pos.x += 0.03
+					"W": pos.x -= 0.03
+			_place_wall(root, role, pos, side, step)
+
+
+func _public_tower_roof(root: Node3D, c: Vector2, width: float, top: float) -> float:
+	if not parts.has("roof_tower"):
+		return top
+	var rb: AABB = parts["roof_tower"]["aabb"]
+	var sx := (width + 2.0 * OVERHANG_ACROSS) / rb.size.x
+	var sz := (width + 2.0 * OVERHANG_ACROSS) / rb.size.z
+	var sy := (sx + sz) / 2.0
+	_place(root, "roof_tower", Vector3(c.x, top - TOWER_ROOF_SINK, c.y), 0.0, Vector3(sx, sy, sz))
+	return top - TOWER_ROOF_SINK + rb.size.y * sy
+
+
+func _public_collision(centre: Vector2, rotation: float, local_pos: Vector3, local_size: Vector3) -> Dictionary:
+	var basis := Basis(Vector3.UP, deg_to_rad(rotation))
+	var size := local_size
+	if absf(rotation) == 90.0:
+		size = Vector3(local_size.z, local_size.y, local_size.x)
+	return {"size": size, "pos": Vector3(centre.x, 0.0, centre.y) + basis * local_pos}
+
+
+func build_monastery(parent: Node3D, centre: Vector2, lx: float, lz: float, floors: int, door_side: String) -> Dictionary:
+	var rotation := _public_rotation(door_side)
+	var sideways := door_side == "E" or door_side == "W"
+	var width := lz if sideways else lx
+	var depth := lx if sideways else lz
+	var root := Node3D.new()
+	root.position = Vector3(centre.x, 0.0, centre.y)
+	root.rotation_degrees.y = rotation
+	parent.add_child(root)
+	var body_floors := maxi(1, floors)
+	var wb: AABB = parts["wall"]["aabb"]
+	var body_top := float(body_floors) * wb.size.y
+	# Match the church's six-storey towers, independently of the lower nave.
+	var tower_floors := 6
+	var tower_top := float(tower_floors) * wb.size.y
+	var tw := minf(width, depth) * 2.0 / 7.0
+	var hx := width / 2.0
+	var hz := depth / 2.0
+	var height := tower_top
+	for side in ["N", "S", "E", "W"]:
+		var length := width if side == "N" or side == "S" else depth
+		_public_wall_run(root, _wall_point(side, 0.0, width, depth, wb.size.z), side, length, 0, body_floors, side == "S")
+	if parts.has("roof"):
+		var pitch := _add_roof(root, Vector2.ZERO, "z", width, depth + 2.0 * OVERHANG_ALONG, body_top)
+		height = maxf(height, body_top + width * pitch / 2.0)
+		for side in ["N", "S"]:
+			_add_gable(root, side, _wall_point(side, 0.0, width, depth, wb.size.z), width, pitch, body_top)
+	var colliders: Array = [_public_collision(centre, rotation, Vector3(0.0, body_top / 2.0, 0.0), Vector3(width, body_top, depth))]
+	for sx in [-1.0, 1.0]:
+		for sz in [-1.0, 1.0]:
+			var c := Vector2(sx * (hx - tw / 2.0), sz * (hz - tw / 2.0))
+			for side in ["N", "S", "E", "W"]:
+				var pos := _wall_point(side, 0.0, tw, tw, wb.size.z)
+				pos += Vector3(c.x, 0.0, c.y)
+				_public_wall_run(root, pos, side, tw, body_floors, tower_floors, false)
+			height = maxf(height, _public_tower_roof(root, c, tw, tower_top))
+			colliders.append(_public_collision(centre, rotation, Vector3(c.x, tower_top / 2.0, c.y), Vector3(tw, tower_top, tw)))
+	return {"wall_top": body_top, "height": height, "colliders": colliders}
+
+
+func _clock_mesh(parent: Node3D, mesh: Mesh, pos: Vector3, color: Color) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	mi.mesh = mesh
+	mi.position = pos
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mi.material_override = mat
+	parent.add_child(mi)
+	return mi
+
+
+func _clock_disc(parent: Node3D, radius: float, z: float, color: Color) -> void:
+	var mesh := CylinderMesh.new()
+	mesh.top_radius = radius
+	mesh.bottom_radius = radius
+	mesh.height = 0.035
+	mesh.radial_segments = 48
+	var mi := _clock_mesh(parent, mesh, Vector3(0.0, 0.0, z), color)
+	mi.rotation_degrees.x = 90.0
+
+
+func _add_static_clock(parent: Node3D, pos: Vector3, radius: float) -> void:
+	var clock := Node3D.new()
+	clock.position = pos
+	parent.add_child(clock)
+	var ink := Color(0.08, 0.065, 0.04)
+	_clock_disc(clock, radius, 0.0, ink)
+	_clock_disc(clock, radius * 0.9, 0.025, Color(0.95, 0.89, 0.7))
+	for i in range(12):
+		var angle := float(i) * TAU / 12.0
+		var tick := BoxMesh.new()
+		tick.size = Vector3(radius * 0.055, radius * 0.16, 0.025)
+		var mi := _clock_mesh(clock, tick, Vector3(sin(angle) * radius * 0.74, cos(angle) * radius * 0.74, 0.06), ink)
+		mi.rotation.z = -angle
+	# 10:10, with the hour hand slightly past ten.
+	for item in [[305.0, 0.44, 0.09], [60.0, 0.66, 0.065]]:
+		var angle := deg_to_rad(float(item[0]))
+		var length := radius * float(item[1])
+		var hand := BoxMesh.new()
+		hand.size = Vector3(radius * float(item[2]), length, 0.035)
+		var mi := _clock_mesh(clock, hand, Vector3(sin(angle) * length / 2.0, cos(angle) * length / 2.0, 0.09), ink)
+		mi.rotation.z = -angle
+	_clock_disc(clock, radius * 0.09, 0.12, ink)
+
+
+func build_town_hall(parent: Node3D, centre: Vector2, lx: float, lz: float, floors: int, door_side: String) -> Dictionary:
+	var rotation := _public_rotation(door_side)
+	var sideways := door_side == "E" or door_side == "W"
+	var width := lz if sideways else lx
+	var depth := lx if sideways else lz
+	var root := Node3D.new()
+	root.position = Vector3(centre.x, 0.0, centre.y)
+	root.rotation_degrees.y = rotation
+	parent.add_child(root)
+	var wb: AABB = parts["wall"]["aabb"]
+	var body_floors := maxi(1, floors)
+	var body_top := float(body_floors) * wb.size.y
+	var tw := minf(4.0, width * 0.36)
+	var tower_z := depth / 2.0 - tw / 2.0
+	var pitch := 1.0
+	if parts.has("roof"):
+		pitch = _add_roof(root, Vector2.ZERO, "z", width, depth + 2.0 * OVERHANG_ALONG, body_top)
+		for side in ["N", "S"]:
+			_add_gable(root, side, _wall_point(side, 0.0, width, depth, wb.size.z), width, pitch, body_top)
+	# Raise the clock storey above the main roof ridge.
+	var main_ridge := body_top + width * pitch / 2.0
+	var tower_floors := maxi(body_floors + 2, int(ceil(main_ridge / wb.size.y)) + 1)
+	var tower_top := float(tower_floors) * wb.size.y
+	for side in ["N", "E", "W"]:
+		var length := width if side == "N" else depth
+		_public_wall_run(root, _wall_point(side, 0.0, width, depth, wb.size.z), side, length, 0, body_floors, false)
+	var wing := (width - tw) / 2.0
+	for sx in [-1.0, 1.0]:
+		var c := Vector3(sx * (tw / 2.0 + wing / 2.0), 0.0, depth / 2.0 - wb.size.z / 2.0)
+		_public_wall_run(root, c, "S", wing, 0, body_floors, false)
+	for side in ["N", "S", "E", "W"]:
+		var pos := _wall_point(side, 0.0, tw, tw, wb.size.z) + Vector3(0.0, 0.0, tower_z)
+		var start := 0 if side == "S" else body_floors
+		_public_wall_run(root, pos, side, tw, start, tower_floors, side == "S", side == "S")
+	var clock_y := tower_top - wb.size.y / 2.0
+	_add_static_clock(root, Vector3(0.0, clock_y, depth / 2.0 + 0.1), minf(tw * 0.32, wb.size.y * 0.36))
+	var height := _public_tower_roof(root, Vector2(0.0, tower_z), tw, tower_top)
+	var colliders: Array = [
+		_public_collision(centre, rotation, Vector3(0.0, body_top / 2.0, 0.0), Vector3(width, body_top, depth)),
+		_public_collision(centre, rotation, Vector3(0.0, tower_top / 2.0, tower_z), Vector3(tw, tower_top, tw))]
+	return {"wall_top": body_top, "height": maxf(height, main_ridge), "colliders": colliders}
+
