@@ -1,92 +1,198 @@
-# Anleitung für Lehrkräfte – Entwicklungsfassung 0.2.0-dev
+# Anleitung für Lehrkräfte
 
-## Wichtig: noch kein fertiges EXE-Paket
-Diese erste Oberfläche setzt das bereits funktionierende Projekt mit Python,
-installierten Bibliotheken und der bisher verwendeten Godot-Programmdatei voraus.
-Für die spätere Unterrichtsausgabe sollen diese Einrichtungsschritte entfallen.
-Die 3D-Modelle müssen weiterhin vollständig im lokalen Projekt vorhanden sein.
+Dokumentationsstand: 16. November 2026 · Anwendung: `0.3.0-dev`.
 
-## Einmal einrichten
-1. Das Update über `install_update.py` wie in START_HIER.txt beschrieben installieren.
-2. Im Projektordner eine PowerShell öffnen.
-3. Ausführen:
+## Was die Anwendung macht
+
+Aus einem Foto gelegter Gebäudekärtchen entsteht eine begehbare mittelalterliche
+3D-Stadt. Die Erkennung und Darstellung laufen lokal. Mit den mitgelieferten Demos
+können Sie das Prinzip ohne Ausdrucke und ohne eigene Fotos ausprobieren.
+
+Diese Anleitung beschreibt die getestete Python-Entwicklungsfassung. Ein fertiges
+Windows-Paket ohne Python-Installation und ohne Godot-Auswahl ist noch in Vorbereitung.
+
+## Einmalige Einrichtung
+
+Wenn die Anwendung bereits eingerichtet wurde, direkt mit „Starten“ fortfahren.
+Für die Einrichtung werden Python mit Tk, die Python-Bibliotheken und Godot benötigt.
+Sie kann durch die Projektbetreuung vorgenommen werden.
+
+Im vollständig entpackten Projektordner PowerShell öffnen:
 
 ```powershell
 python -m pip install -r requirements-teacher.txt
 ```
 
-Hierfür können Downloads erforderlich sein. Die spätere Verarbeitung selbst ist lokal.
+Danach einmal die Modelle durch Godot importieren lassen. Den Pfad anpassen:
+
+```powershell
+$Godot = "C:\Pfad\zu\Godot_v4.7.2-stable_win64.exe"
+& $Godot --headless --path ".\cityviewer" --import
+```
+
+Warten, bis der Vorgang abgeschlossen ist. Falls dabei Fehler erscheinen, zunächst
+die Projektbetreuung verständigen. Für Installation/Downloads kann Internet nötig
+sein; nach vollständiger Einrichtung funktioniert der getestete Ablauf offline.
 
 ## Starten
-`Start_Lehreroberflaeche.bat` doppelklicken.
-Alternativ im Projektordner: `python teacher_app.py`.
 
-Beim ersten 3D-Start die bisher verwendete Godot-EXE über „Godot auswählen“ wählen.
-Nicht `project.godot` und nicht eine beliebige andere EXE auswählen.
-Der gewählte Programmpfad wird für die folgenden Starts gespeichert.
+`Start_Lehreroberflaeche.bat` doppelklicken. Alternativ:
 
-## Foto und Erkennung
-1. Gedrucktes Rasterblatt mit den dazu passenden Gebäudekärtchen auslegen.
-2. Alle vier Eckmarker sichtbar lassen. Blatt möglichst flach, scharf und ohne starke Schatten fotografieren.
-3. „Bild auswählen“ drücken und das Foto auswählen.
-4. „Stadt erkennen“ drücken und warten.
-5. Kontrollbild prüfen: Sind Gebäude, Lage und Ausrichtung richtig?
-6. Warnungen zu Überlappungen und außerhalb liegenden Kärtchen beachten.
-7. „3D-Stadt öffnen“ drücken.
+```powershell
+python teacher_app.py
+```
 
-Das Auswahlfeld unten wechselt zwischen entzerrtem Kontrollbild, markiertem Original
-und unverändertem Foto. Ein Doppelklick auf die Vorschau öffnet bei vorhandenem Ergebnis
-das entzerrte Kontrollbild im externen Bildbetrachter.
-Keine automatische Kontrolle kann garantieren, dass alle gelegten Kärtchen erkannt wurden.
+Falls nötig „Godot auswählen …“ drücken und die tatsächliche Godot-Programmdatei
+wählen. Nicht `project.godot` auswählen. Die Auswahl wird für das Benutzerkonto
+gespeichert und muss nach Verschieben/Löschen der Godot-EXE gegebenenfalls erneuert werden.
 
-## In der 3D-Stadt
-- WASD oder Pfeiltasten: bewegen.
-- Maus: umsehen.
-- Umschalt: schneller bewegen.
-- V: Rundgang / Vogelperspektive wechseln.
-- Vogelperspektive: Mausrad zum Zoomen, Pos1 für die gesamte Stadt.
-- F2: Gebäudenamen ein-/ausblenden.
-- F3: Bildratenanzeige ein-/ausblenden.
-- Esc: 3D-Ansicht schließen; Lehreroberfläche bleibt geöffnet.
+## 1. Zuerst eine Demo ausprobieren
 
-## Falls etwas nicht funktioniert
-- Fehlende Eckmarker: vollständiges Blatt neu fotografieren.
-- Keine Gebäude: Fotoabstand, Schärfe und Sichtbarkeit der Marker prüfen.
-- layout.json fehlt: die zum gedruckten Blatt gehörende Layoutdatei muss unter
-  output/layout.json liegen. Nicht auf Verdacht neue Druckvorlagen erzeugen.
-- Godot fehlt: richtige Godot-Programmdatei erneut auswählen.
-- Blöcke statt Modellen: bestehende Modellinstallation bzw. Katalog prüfen lassen.
-- Technische Fehler: „Protokoll“ und „Ergebnisordner“ öffnen. Dort liegen detect.log
-  und nach einem Viewerstart viewer.log. Fehlermeldung mit Projektversion weitergeben.
+1. Oben bei „Demo ausprobieren“ Beispielstadt 02, 03 oder 04 wählen.
+2. Das zugehörige Foto wird angezeigt.
+3. Eine der beiden Möglichkeiten wählen:
 
-## Datenschutz und Aufräumen
-Es findet kein Foto-Upload durch diese Anwendung statt. Originalfotos werden nicht
-verändert oder kopiert. Die Anwendung speichert jedoch Kontrollbilder, Stadtdaten
-und Protokolle lokal; auch Kontrollbilder können personenbezogene Bildinhalte enthalten.
-Unter Windows liegen sie unter `%LOCALAPPDATA%/CityProject/runs/`.
-Mit „Ergebnisordner“ dorthin wechseln und nicht mehr benötigte Sitzungsordner löschen,
-wenn keine Verarbeitung oder 3D-Ansicht läuft.
+| Schaltfläche | Bedeutung |
+|---|---|
+| „Beispielfoto erkennen“ | Das Foto wird jetzt tatsächlich neu ausgewertet. |
+| „Demo direkt in 3D“ | Eine vorbereitete Stadt wird ohne neue Erkennung geöffnet. |
 
-Für Beispieldateien möglichst nur das Stadtblatt ohne Personen oder Schülernamen verwenden.
+Nach neuer Erkennung erst das Kontrollbild ansehen, dann „3D-Stadt öffnen“ drücken.
+Bei Warnungen wird vor dem 3D-Start eine Bestätigung verlangt.
 
-## Demos ausprobieren – ab 0.3.0-dev
+Die Kennzeichnung unter der Demo-Auswahl unterscheidet vorbereitete Ergebnisse von
+einer neuen Erkennung. Die mitgelieferten Beispiele werden nicht verändert.
 
-Sie benötigen weder Ausdrucke noch eigene Fotos:
+![Mitgeliefertes Beispielfoto](examples/city02/Example_City_02.JPEG)
 
-1. Oben bei „Demo ausprobieren“ eine Beispielstadt auswählen.
-2. Das zugehörige Foto erscheint.
-3. Wählen Sie zwischen:
-   - „Beispielfoto erkennen“: Das Foto wird jetzt tatsächlich neu ausgewertet.
-   - „Demo direkt in 3D“: Eine vorbereitete Stadt wird ohne neue Erkennung geöffnet.
-4. In der 3D-Stadt mit WASD/Pfeilen und Maus bewegen. V wechselt die Ansicht.
-5. Mit Esc zur weiterhin geöffneten Lehreroberfläche zurückkehren.
+*Beispiel: So kann ein gelegtes Stadtblatt aussehen.*
 
-Ob ein Ergebnis vorbereitet oder neu erkannt wurde, steht sichtbar unter der
-Demo-Auswahl und zusätzlich über den Hinweisen. Warnungen sind auch bei Demos zu beachten.
-Mit „Bild auswählen“ wechseln Sie wieder zu einem eigenen Foto. Alte Ergebnisse werden
-beim Wechsel verworfen. Die mitgelieferten Beispiele werden nicht verändert.
-Die Demo-Auswahl und die beiden Demo-Abläufe sind für lokalen Offlinebetrieb vorgesehen.
+![Entzerrtes Kontrollbild](examples/city02/rectified.jpg)
 
-Falls Beispiele fehlen, erscheinen unten Demo-Hinweise. Bei einem Katalogkonflikt muss
-der Beispielsatz durch die Projektbetreuung geprüft werden; die Anwendung überschreibt
-keine Katalogdateien, um den Start zu erzwingen.
+*Beispiel: Kontrollansicht zum Vergleich mit den gelegten Kärtchen.*
+
+## 2. Eigene Stadt auswerten
+
+### Vorbereiten und fotografieren
+
+- Die zum eingerichteten Layout passenden Raster- und Gebäudekärtchen verwenden.
+- Kärtchen vollständig innerhalb des Rasters auslegen, sofern keine absichtliche
+  Fehlerdemonstration vorgesehen ist.
+- Alle vier Eckmarker frei und sichtbar lassen.
+- Möglichst scharf, gleichmäßig beleuchtet und ohne starke Spiegelungen fotografieren.
+- Wenn möglich nur das Blatt aufnehmen, keine Personen oder Schülernamen.
+
+Die Anwendung kann ein Foto auswerten; eine Kamerasteuerung ist derzeit nicht Teil
+der Oberfläche. Das Foto muss als lokale Bilddatei vorliegen.
+
+### Foto laden und erkennen
+
+1. „Bild auswählen …“ drücken und das Foto auswählen.
+2. Vorschau kontrollieren.
+3. „Stadt erkennen“ drücken und warten.
+4. Nach Abschluss das Kontrollbild und die Hinweise prüfen.
+5. „3D-Stadt öffnen“ drücken.
+
+Während Erkennung und Viewerbetrieb sind Auswahl- und Startschaltflächen gesperrt.
+Beim Wechsel zu einem anderen Foto oder einer anderen Demo wird das vorherige
+aktive Ergebnis verworfen.
+
+### Kontrollbild richtig prüfen
+
+Vergleichen Sie mit dem gelegten Blatt:
+
+- Wurden alle erwarteten Gebäude erkannt?
+- Stimmen Lage und Grundfläche?
+- Stimmen Türseiten und Ausrichtung?
+- Gibt es Überlappungen oder Kärtchen außerhalb des Rasters?
+
+„Keine Warnungen“ bedeutet nicht, dass garantiert jedes Kärtchen erkannt wurde.
+Bei Fehlern möglichst die Anordnung oder das Foto korrigieren und erneut erkennen.
+
+## 3. Vorschau und Ergebnisse
+
+Das Auswahlfeld unten wechselt zwischen:
+
+| Anzeige | Inhalt |
+|---|---|
+| `Originalfoto` | Ausgewähltes unverändertes Foto |
+| `control.jpg` | Foto mit eingezeichneten Erkennungen |
+| `rectified.jpg` | Entzerrte Kontrollansicht |
+
+Ein Doppelklick in die Vorschau öffnet bei vorhandenem Ergebnis das entzerrte
+Kontrollbild im externen Bildbetrachter. `rectified_raw.jpg` liegt zusätzlich im
+Ergebnisordner; es ist die entzerrte Ansicht ohne Beschriftungen.
+
+„Ergebnisordner“ öffnet die zugehörige Sitzung. „Protokoll“ öffnet das
+Erkennungsprotokoll `detect.log`; nach einem 3D-Start liegt im Ergebnisordner
+zusätzlich `viewer.log`.
+
+## 4. In der 3D-Stadt
+
+| Taste / Eingabe | Funktion |
+|---|---|
+| WASD oder Pfeiltasten | Bewegen |
+| Maus | Im Rundgang umsehen |
+| Umschalt | Im Rundgang schneller bewegen |
+| V | Rundgang und Vogelperspektive wechseln |
+| Mausrad | In der Vogelperspektive zoomen |
+| Pos1 / Home | In der Vogelperspektive die ganze Stadt einpassen |
+| F2 | Gebäudenamen ein-/ausblenden |
+| F3 | Bildratenanzeige ein-/ausblenden |
+| Esc | Viewer schließen; Lehreroberfläche bleibt geöffnet |
+
+Für diese Bedienung werden derzeit Tastatur und Maus vorausgesetzt. Eine vollständig
+auf Touch ausgelegte Steuerung ist nicht als fertige Funktion dokumentiert.
+
+## 5. Häufige Probleme
+
+| Problem | Vorgehen |
+|---|---|
+| Eckmarker fehlen | Das gesamte Blatt mit allen vier Eckmarkern neu fotografieren. |
+| Keine Gebäude erkannt | Schärfe, Abstand und Sichtbarkeit der Marker prüfen. |
+| Überlappung gemeldet | Anordnung im Kontrollbild prüfen, möglichst korrigieren und neu erkennen. |
+| Demo fehlt in der Auswahl | Dateisatz ist möglicherweise unvollständig; angezeigte Demo-Hinweise weitergeben. |
+| Katalogkonflikt | Projektbetreuung informieren; Katalogdateien nicht selbst austauschen. |
+| Nur Farbblöcke statt Gebäude | Bei frischem Download zuerst Godot-Erstimport prüfen lassen. |
+| Strukturen da, Texturen falsch | Importausgabe und vollständige Texturdateien durch Projektbetreuung prüfen lassen. |
+| Godot nicht gefunden | Richtige Programmdatei erneut auswählen. |
+| `layout.json` fehlt | Projektstand vervollständigen lassen; nicht auf Verdacht Druckvorlagen neu erzeugen. |
+
+Für technische Rückfragen die konkrete Meldung, die gewählte Demo bzw. das Foto
+und die Version notieren. Relevante Protokolle liegen unter „Ergebnisordner“.
+
+## 6. Druckvorlagen
+
+Die aktuellen Druckdateien liegen unter:
+
+- [Rasterblatt](output/print/grid_sheet.pdf)
+- [Gebäudekärtchen](output/print/cards.pdf)
+
+Beim Drucken auf maßhaltige Ausgabe achten: keine unbeabsichtigte Seitenanpassung.
+Layoutdateien und Kärtchen müssen denselben freigegebenen Stand haben. Änderungen
+an Gebäuden oder Rasterparametern durch die Projektbetreuung vornehmen lassen.
+
+Unter `examples/print/` können zusätzlich festgehaltene Anschauungsvorlagen liegen.
+Diese nicht ohne Prüfung mit den aktuellen Arbeitsvorlagen verwechseln.
+
+## 7. Datenschutz und Aufräumen
+
+Die Anwendung lädt Fotos nicht ins Internet hoch. Sie verändert oder kopiert die
+Originaldateien nicht, speichert aber Kontrollbilder, Stadtdaten und Protokolle lokal.
+Kontrollbilder können den gesamten Fotoausschnitt enthalten, Protokolle lokale Pfade.
+
+Unter Windows liegen die Sitzungen hier:
+
+```text
+%LOCALAPPDATA%\CityProject\runs\
+```
+
+Nicht mehr benötigte Sitzungsordner können gelöscht werden, wenn keine zugehörige
+Erkennung oder 3D-Ansicht läuft. Eine automatische Löschfrist gibt es derzeit nicht.
+Die mitgelieferten Beispiele unter `examples/` nicht zum Aufräumen von Arbeitsdaten löschen.
+
+## Weiterführend
+
+- [Projektübersicht](README.md)
+- [Entwicklerdokumentation](Readme.Dev.md)
+- [Quellen und Drittanbieter-Hinweise](THIRD_PARTY_NOTICES.md)
