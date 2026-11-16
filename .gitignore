@@ -1,5 +1,23 @@
+# Python-Umgebungen und Cache
 .venv/
+.venv-build/
 __pycache__/
+*.py[cod]
+
+# Build-Ergebnisse
+/build/
+/dist/
+
+# Lokale Sicherungen und Updatepaket
+/backup_*/
+/lehreroberflaeche_update/
+
+# Lokal abgelegte Godot-Entwicklungsprogramme
+/Godot*.exe
+
+# Godot-Cache
+/cityviewer/.godot/
+
 *.pyc
 output/*
 !output/.gitkeep
@@ -8,6 +26,4 @@ output/print/*
 !output/print/.gitkeep
 scanresult/*
 !scanresult/.gitkeep
-cityviewer/.godot/
 cityviewer/data/*.json
-build/
