@@ -21,6 +21,7 @@ except ImportError:
     raise SystemExit(1)
 from teacher_backend import (VERSION, data_home, read_json, prepare_run, detector_command,
                              validate_result, viewer_command, friendly_error)
+from teacher_demo import (DEMO_VERSION as APP_VERSION, load_demos, prepare_demo_run, check_demo_result)
 
 PROJECT = Path(__file__).resolve().parent
 
@@ -37,7 +38,7 @@ def open_local(path: Path):
 class TeacherApp(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Mittelalterliche Stadt – Lehrkraft | " + VERSION)
+        self.title("Mittelalterliche Stadt – Lehrkraft | " + APP_VERSION)
         self.geometry("1100x800")
         self.minsize(800, 620)
         self.events = queue.Queue()
@@ -65,6 +66,9 @@ class TeacherApp(tk.Tk):
                 self.godot_path = Path(found)
             elif candidates:
                 self.godot_path = next((p for p in candidates if "console" not in p.name.lower()), candidates[0])
+        self.demo = None
+        self.result_kind = None
+        self.demos, self.demo_load_errors = load_demos(PROJECT)
         self.build_ui()
         self.protocol("WM_DELETE_WINDOW", self.close_app)
         self.after(100, self.poll)
@@ -76,6 +80,17 @@ class TeacherApp(tk.Tk):
         top.grid(row=0, column=0, sticky="ew")
         ttk.Label(top, text="Mittelalterliche Stadt", font=("Segoe UI", 19, "bold")).pack(anchor="w")
         ttk.Label(top, text="1. Foto waehlen   →   2. Erkennen   →   3. Kontrollieren   →   4. 3D-Stadt oeffnen").pack(anchor="w", pady=(5, 0))
+        demo_bar = ttk.Frame(top)
+        demo_bar.pack(fill="x", pady=(10, 0))
+        ttk.Label(demo_bar, text="Demo ausprobieren:").pack(side="left")
+        self.demo_box = ttk.Combobox(demo_bar, state="readonly" if self.demos else "disabled", width=25,
+                                    values=[item["title"] for item in self.demos])
+        self.demo_box.pack(side="left", padx=8)
+        self.demo_box.bind("<<ComboboxSelected>>", self.choose_demo)
+        self.demo_direct_btn = ttk.Button(demo_bar, text="Demo direkt in 3D", command=self.launch_prepared_demo, state="disabled")
+        self.demo_direct_btn.pack(side="left")
+        self.demo_hint = tk.StringVar(value="Mitgelieferte Demo waehlen oder eigenes Foto laden.")
+        ttk.Label(top, textvariable=self.demo_hint, wraplength=1000).pack(anchor="w", pady=(5, 0))
         buttons = ttk.Frame(self, padding=(12, 0, 12, 8))
         buttons.grid(row=1, column=0, sticky="ew")
         self.choose_btn = ttk.Button(buttons, text="Bild auswaehlen …", command=self.choose_image)
@@ -116,6 +131,9 @@ class TeacherApp(tk.Tk):
         self.mode_box.pack(side="right", padx=10)
         self.mode_box.bind("<<ComboboxSelected>>", lambda e: self.select_preview())
 
+        if self.demo_load_errors:
+            self.set_notes("Demo-Hinweise:\n" + "\n".join(self.demo_load_errors))
+
     def set_notes(self, text):
         self.warnings.configure(state="normal")
         self.warnings.delete("1.0", "end")
@@ -128,6 +146,8 @@ class TeacherApp(tk.Tk):
         self.godot_btn.configure(state="disabled" if value else "normal")
         self.detect_btn.configure(state="normal" if not value and self.image_path else "disabled")
         self.view_btn.configure(state="normal" if not value and self.city else "disabled")
+        self.demo_box.configure(state="readonly" if not value and self.demos else "disabled")
+        self.demo_direct_btn.configure(state="normal" if not value and self.demo else "disabled")
         if value:
             self.progress.start(12)
         else:
@@ -138,8 +158,13 @@ class TeacherApp(tk.Tk):
             ("Bilder", "*.jpg *.jpeg *.png *.bmp *.tif *.tiff"), ("Alle Dateien", "*.*")])
         if not name:
             return
+        self.demo = None
+        self.result_kind = None
+        self.demo_box.set("")
+        self.demo_hint.set("Eigenes Foto – noch keine Erkennung ausgefuehrt.")
         self.image_path = Path(name)
         self.city, self.run_dir = None, None
+        self.detect_btn.configure(text="Stadt erkennen")
         self.set_busy(False)
         self.filename.set(str(self.image_path))
         self.set_notes("")
@@ -185,23 +210,26 @@ class TeacherApp(tk.Tk):
                 messagebox.showerror("Einstellung nicht gespeichert", str(exc))
 
     def detect(self):
-        self.city = None
-        self.run_dir = None
+        if self.busy or self.image_path is None:
+            return
+        self.city, self.run_dir, self.result_kind = None, None, None
         self.set_busy(True)
         self.set_notes("")
+        self.preview_choice.set("Originalfoto")
+        self.show_image(self.image_path)
+        self.demo_hint.set("Demo – neue Erkennung laeuft." if self.demo else "Eigenes Foto – Erkennung laeuft.")
         self.status.set("Stadt wird erkannt. Bitte warten …")
-        image = self.image_path
-        threading.Thread(target=self.detect_worker, args=(image,), daemon=True).start()
+        threading.Thread(target=self.detect_worker, args=(self.image_path, self.demo), daemon=True).start()
 
-    def detect_worker(self, image):
+    def detect_worker(self, image, demo=None):
         run = None
         try:
-            run = prepare_run(PROJECT, image)
+            run = prepare_demo_run(PROJECT, demo, prepared=False) if demo else prepare_run(PROJECT, image)
             self.events.put(("run", run))
             env = dict(os.environ, PYTHONUTF8="1", PYTHONIOENCODING="utf-8")
-            with (run / "detect.log").open("w", encoding="utf-8") as log:
+            with (run / "detect.log").open("a", encoding="utf-8") as log:
                 cmd = detector_command(PROJECT, image, run)
-                log.write("CityProject " + VERSION + "\n" + repr(cmd) + "\n")
+                log.write("CityProject " + APP_VERSION + "\n" + repr(cmd) + "\n")
                 log.flush()
                 if self.closing.is_set():
                     return
@@ -213,12 +241,15 @@ class TeacherApp(tk.Tk):
                 self.proc = None
             if code:
                 raise RuntimeError(friendly_error((run / "detect.log").read_text(encoding="utf-8")))
-            city = validate_result(run)
-            self.events.put(("done", (run, city)))
+            city = check_demo_result(run) if demo else validate_result(run)
+            self.events.put(("done", (run, city, "demo_recognition" if demo else "recognition")))
         except Exception as exc:
             if run:
-                with (run / "detect.log").open("a", encoding="utf-8") as log:
-                    log.write("\nLAUNCHER\n" + traceback.format_exc())
+                try:
+                    with (run / "detect.log").open("a", encoding="utf-8") as log:
+                        log.write("\nLAUNCHER\n" + traceback.format_exc())
+                except OSError:
+                    pass
             self.events.put(("error", str(exc)))
 
     def poll(self):
@@ -228,17 +259,31 @@ class TeacherApp(tk.Tk):
                 if kind == "run":
                     self.run_dir = value
                 elif kind == "done":
-                    self.run_dir, self.city = value
+                    self.run_dir, self.city, self.result_kind = value
                     self.set_busy(False)
+                    prepared = self.result_kind == "prepared_demo"
+                    if prepared:
+                        label = "Demo – vorbereitete Ergebnisse; keine neue Erkennung ausgefuehrt."
+                    elif self.result_kind == "demo_recognition":
+                        label = "Demo – Beispielfoto neu erkannt."
+                    else:
+                        label = "Eigenes Foto – neu erkannt."
+                    self.demo_hint.set(label)
                     issues = self.city.get("warnings", [])
-                    self.set_notes("\n".join(issues) if issues else "Keine Warnungen gemeldet. Bitte trotzdem Lage, Anzahl und Tuerausrichtung visuell pruefen.")
-                    self.status.set(f"{len(self.city['buildings'])} Gebaeude erkannt. Kontrollbild pruefen." + (" Warnungen beachten!" if issues else ""))
+                    notes = "\n".join(str(x) for x in issues) if issues else "Keine Warnungen gemeldet. Bitte trotzdem Lage, Anzahl und Tuerausrichtung visuell pruefen."
+                    self.set_notes(label + "\n" + notes)
+                    self.status.set(f"{len(self.city['buildings'])} Gebaeude geladen. Kontrollbild pruefen." + (" Warnungen beachten!" if issues else ""))
                     self.preview_choice.set("rectified.jpg")
                     self.select_preview()
+                    if prepared:
+                        self.launch_viewer()
                 elif kind == "error":
+                    self.city = None
+                    self.result_kind = None
                     self.set_busy(False)
-                    self.status.set("Erkennung fehlgeschlagen. Vorherige Ergebnisse werden nicht verwendet.")
-                    messagebox.showerror("Erkennung fehlgeschlagen", value)
+                    self.demo_hint.set("Demo – Verarbeitung fehlgeschlagen." if self.demo else "Eigenes Foto – Verarbeitung fehlgeschlagen.")
+                    self.status.set("Verarbeitung fehlgeschlagen. Vorherige Ergebnisse werden nicht verwendet.")
+                    messagebox.showerror("Verarbeitung fehlgeschlagen", value)
         except queue.Empty:
             pass
         if not self.closing.is_set():
@@ -310,7 +355,7 @@ class TeacherApp(tk.Tk):
                 messagebox.showerror("Kontrollbild", str(exc))
 
     def help(self):
-        messagebox.showinfo("Hilfe", "Alle vier Eckmarker muessen sichtbar sein.\nFoto auswaehlen → Stadt erkennen → Kontrollbild pruefen → 3D-Stadt oeffnen.\n\nGodot wird einmal ueber 'Godot auswaehlen' eingerichtet.\n3D: WASD/Pfeile, Maus; V: Vogelperspektive; Esc: zurueck.\n\nDie Verarbeitung erfolgt lokal, ohne Upload. Originalfotos werden nicht kopiert.\nKontrollbilder, Stadtdaten und Protokolle bleiben im Ergebnisordner.\nDiesen bei Bedarf im Explorer loeschen, wenn keine Verarbeitung laeuft.\n\nDies ist die Python-Entwicklungsfassung, noch keine eigenstaendige EXE.")
+        messagebox.showinfo("Hilfe", "Eigene Stadt: Foto auswaehlen → Stadt erkennen → Kontrollbild pruefen → 3D-Stadt oeffnen.\nAlle vier Eckmarker muessen sichtbar sein.\n\nDemo: Beispielstadt im Auswahlfeld waehlen.\n'Beispielfoto erkennen' fuehrt eine neue Erkennung aus.\n'Demo direkt in 3D' nutzt vorbereitete Ergebnisse, ohne neue Erkennung.\nDer Datenstand der Demo muss fuer den 3D-Start zum Viewer-Katalog passen.\n\nGodot einmal ueber 'Godot auswaehlen' einrichten.\n3D: WASD/Pfeile, Maus; V: Vogelperspektive; Esc: zurueck.\n\nAlles lokal, ohne Upload. Beispiele werden nicht ueberschrieben.\nKontrollbilder, Stadtdaten und Protokolle bleiben in eigenen Ergebnisordnern.\n\nPython-Entwicklungsfassung " + APP_VERSION + ", noch keine eigenstaendige EXE.")
 
     def close_app(self):
         if self.busy and not messagebox.askyesno("Beenden", "Verarbeitung oder 3D-Ansicht laeuft noch. Beenden und gestarteten Prozess schliessen?"):
@@ -319,6 +364,49 @@ class TeacherApp(tk.Tk):
         if self.proc and self.proc.poll() is None:
             self.proc.terminate()
         self.destroy()
+
+
+    def choose_demo(self, event=None):
+        if self.busy:
+            return
+        index = self.demo_box.current()
+        if not 0 <= index < len(self.demos):
+            return
+        self.demo = self.demos[index]
+        self.image_path = self.demo["photo"]
+        self.city, self.run_dir, self.result_kind = None, None, None
+        self.preview_choice.set("Originalfoto")
+        self.filename.set("DEMO: " + self.demo["title"] + " | " + str(self.image_path))
+        self.demo_hint.set("Demo – mitgeliefertes Beispiel. Keine gedruckten Kaertchen noetig.")
+        self.detect_btn.configure(text="Beispielfoto erkennen")
+        self.set_notes(self.demo["description"] + ("\n\nNicht verfuegbare Beispiele:\n" + "\n".join(self.demo_load_errors) if self.demo_load_errors else ""))
+        self.status.set("Demo ausgewaehlt. Neu erkennen oder vorbereitete Stadt direkt in 3D oeffnen.")
+        self.set_busy(False)
+        self.show_image(self.image_path)
+
+
+    def launch_prepared_demo(self):
+        if self.busy or not self.demo:
+            return
+        self.city, self.run_dir, self.result_kind = None, None, None
+        self.set_notes("")
+        self.set_busy(True)
+        self.demo_hint.set("Demo – vorbereitete Ergebnisse werden geprueft; keine neue Erkennung.")
+        self.status.set("Demo wird vorbereitet …")
+        threading.Thread(target=self.prepared_demo_worker, args=(self.demo,), daemon=True).start()
+
+
+    def prepared_demo_worker(self, demo):
+        try:
+            if self.closing.is_set():
+                return
+            run = prepare_demo_run(PROJECT, demo, prepared=True)
+            self.events.put(("run", run))
+            city = check_demo_result(run)
+            if not self.closing.is_set():
+                self.events.put(("done", (run, city, "prepared_demo")))
+        except Exception as exc:
+            self.events.put(("error", str(exc)))
 
 
 if __name__ == "__main__":

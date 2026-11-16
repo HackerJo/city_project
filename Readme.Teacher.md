@@ -68,3 +68,25 @@ Mit „Ergebnisordner“ dorthin wechseln und nicht mehr benötigte Sitzungsordn
 wenn keine Verarbeitung oder 3D-Ansicht läuft.
 
 Für Beispieldateien möglichst nur das Stadtblatt ohne Personen oder Schülernamen verwenden.
+
+## Demos ausprobieren – ab 0.3.0-dev
+
+Sie benötigen weder Ausdrucke noch eigene Fotos:
+
+1. Oben bei „Demo ausprobieren“ eine Beispielstadt auswählen.
+2. Das zugehörige Foto erscheint.
+3. Wählen Sie zwischen:
+   - „Beispielfoto erkennen“: Das Foto wird jetzt tatsächlich neu ausgewertet.
+   - „Demo direkt in 3D“: Eine vorbereitete Stadt wird ohne neue Erkennung geöffnet.
+4. In der 3D-Stadt mit WASD/Pfeilen und Maus bewegen. V wechselt die Ansicht.
+5. Mit Esc zur weiterhin geöffneten Lehreroberfläche zurückkehren.
+
+Ob ein Ergebnis vorbereitet oder neu erkannt wurde, steht sichtbar unter der
+Demo-Auswahl und zusätzlich über den Hinweisen. Warnungen sind auch bei Demos zu beachten.
+Mit „Bild auswählen“ wechseln Sie wieder zu einem eigenen Foto. Alte Ergebnisse werden
+beim Wechsel verworfen. Die mitgelieferten Beispiele werden nicht verändert.
+Die Demo-Auswahl und die beiden Demo-Abläufe sind für lokalen Offlinebetrieb vorgesehen.
+
+Falls Beispiele fehlen, erscheinen unten Demo-Hinweise. Bei einem Katalogkonflikt muss
+der Beispielsatz durch die Projektbetreuung geprüft werden; die Anwendung überschreibt
+keine Katalogdateien, um den Start zu erzwingen.

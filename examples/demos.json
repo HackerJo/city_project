@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "demos": [
+    {
+      "id": "city02",
+      "title": "Beispielstadt 02",
+      "folder": "city02",
+      "photo": "Example_City_02.JPEG",
+      "description": "Mitgeliefertes Stadtbeispiel: Foto erkennen oder vorbereitete Stadt in 3D erkunden."
+    },
+    {
+      "id": "city03",
+      "title": "Beispielstadt 03",
+      "folder": "city03",
+      "photo": "Example_City_03.JPEG",
+      "description": "Mitgeliefertes Stadtbeispiel: Foto erkennen oder vorbereitete Stadt in 3D erkunden."
+    },
+    {
+      "id": "city04",
+      "title": "Beispielstadt 04",
+      "folder": "city04",
+      "photo": "Example_City_04.JPEG",
+      "description": "Mitgeliefertes Stadtbeispiel: Foto erkennen oder vorbereitete Stadt in 3D erkunden."
+    }
+  ]
+}
