@@ -1,0 +1,252 @@
+{
+  "grid": {
+    "columns": 12,
+    "rows": 8,
+    "field_mm": 30.0
+  },
+  "buildings": [
+    {
+      "id": 9,
+      "key": "brewery",
+      "name": "Brauerei",
+      "col": 0,
+      "row": 0,
+      "width_fields": 1,
+      "depth_fields": 2,
+      "rotation": 90,
+      "door": "E",
+      "pass": 2
+    },
+    {
+      "id": 2,
+      "key": "house",
+      "name": "Wohnhaus",
+      "col": 2,
+      "row": 0,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 180,
+      "door": "S",
+      "pass": 2
+    },
+    {
+      "id": 8,
+      "key": "tanner",
+      "name": "Gerber",
+      "col": 5,
+      "row": 0,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 180,
+      "door": "S",
+      "pass": 2
+    },
+    {
+      "id": 6,
+      "key": "butcher",
+      "name": "Metzger",
+      "col": 8,
+      "row": 0,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 4,
+      "key": "inn",
+      "name": "Gasthaus",
+      "col": 11,
+      "row": 0,
+      "width_fields": 1,
+      "depth_fields": 2,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 10,
+      "key": "smithy",
+      "name": "Schmiede",
+      "col": 3,
+      "row": 1,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 180,
+      "door": "S",
+      "pass": 2
+    },
+    {
+      "id": 2,
+      "key": "house",
+      "name": "Wohnhaus",
+      "col": 8,
+      "row": 1,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 15,
+      "key": "mill",
+      "name": "Mühle",
+      "col": 0,
+      "row": 2,
+      "width_fields": 2,
+      "depth_fields": 1,
+      "rotation": 90,
+      "door": "E",
+      "pass": 2
+    },
+    {
+      "id": 1,
+      "key": "well",
+      "name": "Brunnen",
+      "col": 5,
+      "row": 2,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 0,
+      "door": "N",
+      "pass": 2
+    },
+    {
+      "id": 5,
+      "key": "bakery",
+      "name": "Bäcker",
+      "col": 11,
+      "row": 2,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 7,
+      "key": "market",
+      "name": "Marktplatz",
+      "col": 3,
+      "row": 3,
+      "width_fields": 2,
+      "depth_fields": 2,
+      "rotation": 180,
+      "door": "S",
+      "pass": 2
+    },
+    {
+      "id": 7,
+      "key": "market",
+      "name": "Marktplatz",
+      "col": 6,
+      "row": 3,
+      "width_fields": 2,
+      "depth_fields": 2,
+      "rotation": 180,
+      "door": "S",
+      "pass": 2
+    },
+    {
+      "id": 11,
+      "key": "stable",
+      "name": "Stall",
+      "col": 9,
+      "row": 3,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 3,
+      "key": "church",
+      "name": "Kirche",
+      "col": 10,
+      "row": 4,
+      "width_fields": 2,
+      "depth_fields": 2,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 2,
+      "key": "house",
+      "name": "Wohnhaus",
+      "col": 0,
+      "row": 5,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 90,
+      "door": "E",
+      "pass": 2
+    },
+    {
+      "id": 2,
+      "key": "house",
+      "name": "Wohnhaus",
+      "col": 0,
+      "row": 5,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 90,
+      "door": "E",
+      "pass": 2
+    },
+    {
+      "id": 1,
+      "key": "well",
+      "name": "Brunnen",
+      "col": 5,
+      "row": 5,
+      "width_fields": 1,
+      "depth_fields": 1,
+      "rotation": 270,
+      "door": "W",
+      "pass": 2
+    },
+    {
+      "id": 13,
+      "key": "town_hall",
+      "name": "Rathaus",
+      "col": 0,
+      "row": 6,
+      "width_fields": 2,
+      "depth_fields": 2,
+      "rotation": 0,
+      "door": "N",
+      "pass": 2
+    },
+    {
+      "id": 14,
+      "key": "guildhall",
+      "name": "Zunfthaus",
+      "col": 5,
+      "row": 6,
+      "width_fields": 2,
+      "depth_fields": 2,
+      "rotation": 0,
+      "door": "N",
+      "pass": 2
+    },
+    {
+      "id": 12,
+      "key": "monastery",
+      "name": "Kloster",
+      "col": 8,
+      "row": 6,
+      "width_fields": 3,
+      "depth_fields": 2,
+      "rotation": 0,
+      "door": "N",
+      "pass": 2
+    }
+  ],
+  "warnings": [
+    "Überlappung bei Feld A6: Wohnhaus und Wohnhaus."
+  ]
+}
