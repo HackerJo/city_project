@@ -1,0 +1,17 @@
+Backendtests (kein echter Detektor):
+test_empty_result_rejected (__main__.BackendTests.test_empty_result_rejected) ... ok
+test_missing_layout (__main__.BackendTests.test_missing_layout) ... ok
+test_no_original_photo_copy (__main__.BackendTests.test_no_original_photo_copy) ... ok
+test_overlap_warning (__main__.BackendTests.test_overlap_warning) ... ok
+test_result_validation (__main__.BackendTests.test_result_validation) ... ok
+test_snapshot_and_unique_results (__main__.BackendTests.test_snapshot_and_unique_results) ... ok
+test_subprocess_interface_with_fake_detector (__main__.BackendTests.test_subprocess_interface_with_fake_detector) ... ok
+test_viewer_command_absolute_and_catalog_change (__main__.BackendTests.test_viewer_command_absolute_and_catalog_change) ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.042s
+
+OK
+
+Installer am synthetischen Projekt erfolgreich; vorhandener Erkennungscode unveraendert.
+Nicht getestet: Tk-Fenster, Godot, echte ArUco-Erkennung, Windows.

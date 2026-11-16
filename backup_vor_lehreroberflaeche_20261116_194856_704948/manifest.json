@@ -1,0 +1,110 @@
+[
+  {
+    "path": "cityviewer/data/buildings.json",
+    "sha256": "39d406f57f35b148fe7189a606654c51c39e9280c80ef595c3eaf78fadea6958"
+  },
+  {
+    "path": "cityviewer/data/city.json",
+    "sha256": "f54d52e054eeee908b1676f5035a639bfeb16bdbc2eb3d53feef41d2184b1a5d"
+  },
+  {
+    "path": "cityviewer/data/parts.csv",
+    "sha256": "e5abadd0191e84bc1b3ad9a1b6ac0a498ff36345a376c0a488cef7780633a022"
+  },
+  {
+    "path": "cityviewer/project.godot",
+    "sha256": "f93ee62dd063b0a1f0bbbf0e4ef8bd345057573414bbbc804796a7c093090564"
+  },
+  {
+    "path": "cityviewer/scenes/main.tscn",
+    "sha256": "64fe18a0958e1fef9ff9ec8f3c85e59e993ca24463f9a3f23c77669fc1762313"
+  },
+  {
+    "path": "cityviewer/scenes/model_gallery.tscn",
+    "sha256": "d91619cc012a01a385114486920a6c97aa62db13453f2773a7195abfb287effb"
+  },
+  {
+    "path": "cityviewer/scripts/building_builder.gd",
+    "sha256": "d6132ace91d9508db704e85f7f4d608430c4739cea6b32008f8c0b2a0e9b2e5c"
+  },
+  {
+    "path": "cityviewer/scripts/building_builder.gd.uid",
+    "sha256": "d7aaca68c05df6902f6ffa058a8e10dd5663143b37b0711f4bf58dc201504c2b"
+  },
+  {
+    "path": "cityviewer/scripts/city_wall.gd",
+    "sha256": "0c3c5c4837567f1cd41ac83c7b9bb03331b9d150dc2778fe613de282acba7467"
+  },
+  {
+    "path": "cityviewer/scripts/main.gd",
+    "sha256": "865dbf4771ec4c6568ecf26af9a64011c325ecc0432fa53efb912f2e5554693b"
+  },
+  {
+    "path": "cityviewer/scripts/main.gd.uid",
+    "sha256": "c9d8ae12cc63573f67b6a17f4c1ca1f38c4e03046e750ed46d46ff59003427c0"
+  },
+  {
+    "path": "cityviewer/scripts/model_gallery.gd",
+    "sha256": "024c2653d5def14ff66f55956dc91805a054c2780a98d2c4a50e31f51a9df1a2"
+  },
+  {
+    "path": "cityviewer/scripts/model_gallery.gd.uid",
+    "sha256": "46155f501c2c9f2e026bb030b571d8cd0e588a10b827e2cd086cc2078fa55a53"
+  },
+  {
+    "path": "controls.md",
+    "sha256": "060c24a84af088c81c3550fdd89e804234ee7bd871de4ec6e1373e78f1b6a931"
+  },
+  {
+    "path": "models.md",
+    "sha256": "45f50e5687acc865a11a9363077ed5b942801cd01770d070da8da57635a2f538"
+  },
+  {
+    "path": "output/buildings.json",
+    "sha256": "3bb656f91bfab7a2b1cae56478919de919cfc2a64f78945cdec4a504c791652e"
+  },
+  {
+    "path": "output/layout.json",
+    "sha256": "4948224c57a4fe909d060582ca0756ae7a17b29f5588bff076cb7e94ac79cc6e"
+  },
+  {
+    "path": "README.md",
+    "sha256": "501b07233baceeb2cbcec006e34ab0d5d2d5030e20d3b256505f36bf3fc7877b"
+  },
+  {
+    "path": "requirements.txt",
+    "sha256": "fddc09e63e37f1f0d6b6379d7de863fb893a8ccbec1e6959bd215200d46b9670"
+  },
+  {
+    "path": "scripts/detect_city.py",
+    "sha256": "4871c5099f5a359409b02ce8945a7a77dc97fc9fa36dadb1932619afebc625cc"
+  },
+  {
+    "path": "scripts/generate_prints.py",
+    "sha256": "160e2d1ce5eb2e5b5e6273d8725f485325f57d30f7891452ae12f4234c10c06e"
+  },
+  {
+    "path": "scripts/i18n.py",
+    "sha256": "e649652fd255a74da885d1fdde7f88825b692dd0847bca3dfbcca475b9e27907"
+  },
+  {
+    "path": "scripts/paths.py",
+    "sha256": "adb1db76d0bd28ea62122492049f9d61d2851e42d0e684d180cb867751ebcec1"
+  },
+  {
+    "path": "scripts/settings_loader.py",
+    "sha256": "09d6f32a33745018795a57a1951d3280eda2a02812a139490ee1816eee797949"
+  },
+  {
+    "path": "settings/buildings.csv",
+    "sha256": "b58d718b17176246690385b35e1726f6192ed2fa38dd74e3b402effab59db37a"
+  },
+  {
+    "path": "settings/settings.csv",
+    "sha256": "e4189971443dcb245068d848e445b7102b7c61fe7f35516271bdf5d7b273607b"
+  },
+  {
+    "path": "time.md",
+    "sha256": "b9d9171fb2b37a5fcbcf28c51cb74e869fda08f16d56ac8fc21f3f9a49570325"
+  }
+]
