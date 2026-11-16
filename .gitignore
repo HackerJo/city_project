@@ -27,3 +27,15 @@ output/print/*
 scanresult/*
 !scanresult/.gitkeep
 cityviewer/data/*.json
+
+# Freigegebener Layout- und Katalogstand
+!/output/layout.json
+!/output/buildings.json
+!/cityviewer/data/buildings.json
+
+# Freigegebene Druckvorlagen
+!/output/print/cards.pdf
+!/output/print/grid_sheet.pdf
+
+# Temporäres Demo-Installationspaket
+/demo_update/
