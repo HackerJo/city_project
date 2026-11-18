@@ -26,8 +26,8 @@ def prepare_run(project: Path, image: Path, work_home: Path | None = None) -> Pa
     if not image.is_file():
         raise ValueError("Das ausgewaehlte Foto ist nicht mehr vorhanden.")
     detector = project / "scripts" / "detect_city.py"
-    if not detector.is_file():
-        raise ValueError("scripts/detect_city.py fehlt. Bitte im vollstaendigen Projekt starten.")
+    if not detector.is_file() and find_bundled_detector(project) is None:
+        raise ValueError("scripts/detect_city.py fehlt und keine Stadt_Erkennung.exe gefunden. Bitte im vollstaendigen Projekt starten.")
     layout_path = project / "output" / "layout.json"
     if not layout_path.is_file():
         raise ValueError("output/layout.json fehlt. Die zum gedruckten Blatt passende Datei wiederherstellen; neue Druckvorlagen nur bei Bedarf erzeugen.")
@@ -58,9 +58,23 @@ def prepare_run(project: Path, image: Path, work_home: Path | None = None) -> Pa
     return run
 
 
+def find_bundled_detector(project: Path) -> Path | None:
+    candidate = project / "Stadt_Erkennung.exe"
+    return candidate if candidate.is_file() else None
+
+
 def detector_command(project: Path, image: Path, run: Path) -> list[str]:
+    image, run = image.resolve(), run.resolve()
+    detector = find_bundled_detector(project)
+    if detector is not None:
+        return [str(detector),
+                "--image", str(image),
+                "--root", str(run / "input"),
+                "--out", str(run / "result")]
     return [sys.executable, str(project.resolve() / "scripts/detect_city.py"),
-            "--image", str(image.resolve()), "--root", str(run / "input"), "--out", str(run / "result")]
+            "--image", str(image),
+            "--root", str(run / "input"),
+            "--out", str(run / "result")]
 
 
 def validate_result(run: Path) -> dict:
