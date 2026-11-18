@@ -20,7 +20,7 @@ except ImportError:
     root.destroy()
     raise SystemExit(1)
 from teacher_backend import (VERSION, data_home, read_json, prepare_run, detector_command,
-                             validate_result, viewer_command, friendly_error)
+                             validate_result, viewer_command, find_exported_viewer, friendly_error)
 from teacher_demo import (DEMO_VERSION as APP_VERSION, load_demos, prepare_demo_run, check_demo_result)
 
 PROJECT = Path(__file__).resolve().parent
@@ -66,6 +66,7 @@ class TeacherApp(tk.Tk):
                 self.godot_path = Path(found)
             elif candidates:
                 self.godot_path = next((p for p in candidates if "console" not in p.name.lower()), candidates[0])
+        self.viewer_exe = find_exported_viewer(PROJECT)
         self.demo = None
         self.result_kind = None
         self.demos, self.demo_load_errors = load_demos(PROJECT)
@@ -299,14 +300,15 @@ class TeacherApp(tk.Tk):
     def launch_viewer(self):
         if not self.city or not self.run_dir:
             return
-        if not self.godot_path or not self.godot_path.is_file():
-            self.choose_godot()
+        if self.viewer_exe is None:
             if not self.godot_path or not self.godot_path.is_file():
-                return
+                self.choose_godot()
+                if not self.godot_path or not self.godot_path.is_file():
+                    return
         if self.city.get("warnings") and not messagebox.askyesno("Warnungen vorhanden", "Die Erkennung meldet Warnungen, zum Beispiel Ueberlappungen.\nKontrollbild geprueft und trotzdem in 3D oeffnen?"):
             return
         try:
-            cmd = viewer_command(PROJECT, self.godot_path, self.run_dir)
+            cmd = viewer_command(PROJECT, self.godot_path, self.run_dir, self.viewer_exe)
             with (self.run_dir / "viewer.log").open("a", encoding="utf-8") as log:
                 log.write(repr(cmd) + "\n")
                 log.flush()
@@ -355,7 +357,7 @@ class TeacherApp(tk.Tk):
                 messagebox.showerror("Kontrollbild", str(exc))
 
     def help(self):
-        messagebox.showinfo("Hilfe", "Eigene Stadt: Foto auswaehlen → Stadt erkennen → Kontrollbild pruefen → 3D-Stadt oeffnen.\nAlle vier Eckmarker muessen sichtbar sein.\n\nDemo: Beispielstadt im Auswahlfeld waehlen.\n'Beispielfoto erkennen' fuehrt eine neue Erkennung aus.\n'Demo direkt in 3D' nutzt vorbereitete Ergebnisse, ohne neue Erkennung.\nDer Datenstand der Demo muss fuer den 3D-Start zum Viewer-Katalog passen.\n\nGodot einmal ueber 'Godot auswaehlen' einrichten.\n3D: WASD/Pfeile, Maus; V: Vogelperspektive; Esc: zurueck.\n\nAlles lokal, ohne Upload. Beispiele werden nicht ueberschrieben.\nKontrollbilder, Stadtdaten und Protokolle bleiben in eigenen Ergebnisordnern.\n\nPython-Entwicklungsfassung " + APP_VERSION + ", noch keine eigenstaendige EXE.")
+        messagebox.showinfo("Hilfe", "Eigene Stadt: Foto auswaehlen → Stadt erkennen → Kontrollbild pruefen → 3D-Stadt oeffnen.\nAlle vier Eckmarker muessen sichtbar sein.\n\nDemo: Beispielstadt im Auswahlfeld waehlen.\n'Beispielfoto erkennen' fuehrt eine neue Erkennung aus.\n'Demo direkt in 3D' nutzt vorbereitete Ergebnisse, ohne neue Erkennung.\nDer Datenstand der Demo muss fuer den 3D-Start zum Viewer-Katalog passen.\n\nBei vorhandener exportierter CityViewer.exe wird diese automatisch verwendet; sonst Godot ueber 'Godot auswaehlen' einrichten.\n3D: WASD/Pfeile, Maus; V: Vogelperspektive; Esc: zurueck.\n\nAlles lokal, ohne Upload. Beispiele werden nicht ueberschrieben.\nKontrollbilder, Stadtdaten und Protokolle bleiben in eigenen Ergebnisordnern.\n\nPython-Entwicklungsfassung " + APP_VERSION + ", noch keine eigenstaendige EXE.")
 
     def close_app(self):
         if self.busy and not messagebox.askyesno("Beenden", "Verarbeitung oder 3D-Ansicht laeuft noch. Beenden und gestarteten Prozess schliessen?"):

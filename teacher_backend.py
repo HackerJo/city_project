@@ -99,15 +99,26 @@ def validate_result(run: Path) -> dict:
     return city
 
 
-def viewer_command(project: Path, godot: Path, run: Path) -> list[str]:
-    if not godot.is_file():
-        raise ValueError("Bitte zuerst die Godot-Programmdatei auswaehlen.")
-    if not (project / "cityviewer/project.godot").is_file():
-        raise ValueError("cityviewer/project.godot fehlt.")
+def find_exported_viewer(project: Path) -> Path | None:
+    candidate = project / "cityviewer" / "CityViewer.exe"
+    return candidate if candidate.is_file() else None
+
+
+def viewer_command(project: Path, godot: Path, run: Path,
+                   viewer_exe: Path | None = None) -> list[str]:
     current = project / "cityviewer/data/buildings.json"
     snapshot = run / "input/output/buildings.json"
     if read_json(current) != read_json(snapshot):
         raise ValueError("Der Gebaeudekatalog wurde seit der Erkennung geaendert. Bitte erneut erkennen.")
+    if viewer_exe is not None:
+        viewer_exe = viewer_exe.resolve()
+        if not viewer_exe.is_file():
+            raise ValueError("Die exportierte CityViewer.exe wurde nicht gefunden: " + str(viewer_exe))
+        return [str(viewer_exe), "--", str((run / "result/city.json").resolve())]
+    if not godot.is_file():
+        raise ValueError("Bitte zuerst die Godot-Programmdatei auswaehlen.")
+    if not (project / "cityviewer/project.godot").is_file():
+        raise ValueError("cityviewer/project.godot fehlt.")
     return [str(godot.resolve()), "--path", str((project / "cityviewer").resolve()),
             "--", str((run / "result/city.json").resolve())]
 
