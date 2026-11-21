@@ -1,9 +1,10 @@
 # Entwicklerdokumentation
 
-Dokumentationsstand: 16. November 2026 · Oberfläche: `0.3.0-dev`.
+Dokumentationsstand: 21. November 2026 · Oberfläche: `0.3.0-dev`.
 
-Diese Datei beschreibt die getestete Python-Fassung. Sie ist keine fertige
-Build-Anleitung für ein eigenständiges EXE-Paket.
+Diese Datei beschreibt die getestete Python-Fassung und die Lehrerausgabe.
+Sie ist keine fertige Build-Anleitung für ein eigenständiges EXE-Paket ohne
+weitere Abnahme.
 
 ## 1. Zweck und Architektur
 
@@ -120,6 +121,53 @@ Bis dieser Unterschied geklärt ist, ist der GUI-Export der verbindliche Weg. Da
 
 Der Godot-Parameter ist für den Start der exportierten EXE nicht erforderlich.
 
+
+## 2b. Lehrerausgabe mit PyInstaller bauen
+
+Die Lehrerausgabe bündelt Oberfläche, Erkennung und den exportierten Godot-Viewer
+in einem Windows-Ordner. Sie benötigt auf dem Zielrechner weder Python noch Godot.
+
+Voraussetzungen auf dem Build-Rechner:
+
+- Python mit Tk.
+- PyInstaller als Modul: `python -m pip install pyinstaller`.
+- Die über die Godot-GUI exportierte `cityviewer/CityViewer.exe` und
+  `cityviewer/CityViewer.pck`.
+
+Build im Projektstamm:
+
+```powershell
+cd C:\Pfad\zu\city_project
+.\build_lehrerausgabe.ps1
+```
+
+Das Skript erstellt `build\lehrerausgabe\` mit:
+
+```text
+Lehrer_Stadt.exe
+Stadt_Erkennung.exe
+_internal\cityviewer\CityViewer.exe
+_internal\cityviewer\CityViewer.pck
+_internal\cityviewer\data\parts.csv
+_internal\cityviewer\data\city.json
+examples\
+output\
+```
+
+Wichtig: Die exportierte Godot-`.pck` enthält die rohe `parts.csv` nicht
+zuverlässig. Der Builder benötigt sie jedoch. Deshalb kopiert das Buildskript
+`cityviewer/data/parts.csv` und `cityviewer/data/city.json` explizit als lose
+Dateien nach `_internal\cityviewer\data\`. Fehlt die `parts.csv` dort, zeigt der
+3D-Start Farbblöcke statt Gebäuden.
+
+Start der Lehrerausgabe:
+
+```powershell
+.\build\lehrerausgabe\Lehrer_Stadt.exe
+```
+
+Die Godot-Viewer-EXE wird automatisch gefunden und mit dem Sitzungsergebnis
+gestartet. Eine Godot-Auswahl im Interface ist nicht erforderlich.
 
 ## 3. Datenquellen und erzeugte Dateien
 
@@ -305,6 +353,8 @@ python check_demo_examples.py
 - Offlinebetrieb bestätigt.
 - Frischer GitHub-ZIP-Download: Prüfskripte erfolgreich, GUI startbar.
 - Nach Godot-Erstimport: Gebäudestrukturen, Texturen und Farben korrekt.
+- Lehrerausgabe: 3D-Start mit korrekten Gebäuden nach expliziter Kopie von
+  `parts.csv` und `city.json` nach `_internal\cityviewer\data\`.
 
 Aus der Rückmeldung zum frischen Download folgt keine Prüfung auf einem Rechner
 ohne Entwicklungswerkzeuge. Die gemeldete Grafik-Hardware dieses Downloadtests
@@ -346,23 +396,33 @@ bewusst versioniert werden:
 Ein frischer Klon enthält bereits den integrierten Code und benötigt keine
 historischen `apply_patch_*.py`- oder Update-Installer.
 
-## 8. Windows-Paket: noch offen
+## 8. Windows-Paket: Lehrerausgabe
 
-Die früher skizzierten PyInstaller-Aufrufe sind keine fertig geprüfte Buildlösung.
-Noch umzusetzen und separat zu testen:
+Die Lehrerausgabe wird mit PyInstaller gebaut und im Ordner
+`build\lehrerausgabe\` zusammengestellt. Sie enthält Oberfläche, Erkennung und
+den über die Godot-GUI exportierten Viewer.
 
-- Definierter Worker-Modus oder eigene Erkennungs-EXE.
-- Korrekte Einbindung von `scripts/` und dessen Imports.
-- Trennung von gebündelten Ressourcen, Projektdateien und beschreibbaren Benutzerdaten.
-- Automatischer Aufruf eines exportierten Godot-Viewers statt Editor-Auswahl.
-- Godot-Import und -Export im Build; JSON-/CSV-Filter und dynamisch geladene Modelle prüfen.
-- Demos, Texturen und abhängige Modelldateien vollständig paketieren.
-- Abhängigkeitsversionen und Drittanbieter-Hinweise festhalten.
-- Abnahme auf Windows ohne separate Python-/Godot-Editor-Installation und offline.
+Umgesetzt und getestet:
 
-Nicht einfach `sys.executable scripts/detect_city.py` unverändert einfrieren:
-`sys.executable` bezeichnet in einer eingefrorenen Anwendung die Anwendungs-EXE.
-Der aktuelle Vieweraufruf verwendet Editorparameter (`--path`); der Exportaufruf
-muss passend zur späteren Paketstruktur implementiert werden.
+- Eigene Erkennungs-EXE `Stadt_Erkennung.exe` statt `sys.executable`-Aufruf.
+- Automatischer Start des exportierten Godot-Viewers ohne Editor-Auswahl.
+- Kopie der exportierten `CityViewer.exe` und `CityViewer.pck` nach
+  `_internal\cityviewer\`.
+- Explizite Kopie der rohen `parts.csv` und `city.json` nach
+  `_internal\cityviewer\data\`, weil die `.pck` die `parts.csv` nicht enthält.
+- Paketierung von Demos, Katalog, Layout und Druckvorlagen.
+- 3D-Start aus der Lehreroberfläche mit korrekten Gebäuden statt Farbblöcken.
+
+Noch offen:
+
+- Abnahme auf einem Windows-Rechner ohne Python- und Godot-Installation.
+- Offline-Abnahme der Lehrerausgabe.
+- Performance- und Grafikabnahme auf dem Zielgerät Surface Go 3.
+- Versionsabgleich zwischen `teacher_backend.VERSION` und `teacher_demo.DEMO_VERSION`.
+- Optional: GitHub-Release mit der Lehrerausgabe als ZIP nach erfolgreicher Abnahme.
+
+Der GUI-Export des Godot-Viewers bleibt der verbindliche Weg zur Erzeugung von
+`CityViewer.exe` und `CityViewer.pck`. Der PowerShell-Skript-Export des Viewers
+ist weiterhin optional und erzeugt derzeit eine EXE ohne die rohe `parts.csv`.
 
 Lizenzstatus und Quellen: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
