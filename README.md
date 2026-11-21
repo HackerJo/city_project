@@ -73,6 +73,8 @@ python test_teacher_demo.py
 python check_demo_examples.py
 ```
 
+- Abnahme-Checkliste: [Lehrer.pdf](Lehrer.pdf)
+
 ## Dokumentation
 
 - Entwicklerdokumentation: [Readme.Dev.md](Readme.Dev.md)
