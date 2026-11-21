@@ -1,10 +1,9 @@
 # Drittanbieter-Inhalte und Lizenzstatus
 
-Dokumentationsstand: 16. November 2026.
+Dokumentationsstand: 21. November 2026.
 
-Diese Übersicht dokumentiert die bestätigte Modellquelle und den noch offenen
-Lizenzumfang des späteren Windows-Pakets. Sie ist noch keine vollständige Sammlung
-aller für die binäre Weitergabe erforderlichen Lizenztexte.
+Diese Übersicht dokumentiert die bestätigte Modellquelle, die Lizenzlage der
+gebündelten Abhängigkeiten und die Lizenz des eigenen Codes.
 
 ## 1. 3D-Modelle: Medieval Village MegaKit
 
@@ -15,51 +14,25 @@ aller für die binäre Weitergabe erforderlichen Lizenztexte.
 | Verwendete Ausgabe | Kostenlose Ausgabe, laut Angabe des Projektbetreibers |
 | Offizielle Quelle | https://quaternius.com/packs/medievalvillagemegakit.html |
 | Auf der Paketwebseite ausgewiesene Freigabe | CC0 |
-| Erläuterung CC0 1.0 Universal | https://creativecommons.org/publicdomain/zero/1.0/deed.de |
 | Vollständiger CC0-Text | https://creativecommons.org/publicdomain/zero/1.0/legalcode |
 | Verwendung im Projekt | Modulare Bauteile für Gebäude und Stadtgestaltung |
 | Ressourcenbereich | `cityviewer/models/parts/` |
+| Lokale Lizenzdatei | `licenses/quaternius-medieval-village/License_Standard.txt` |
 
-Die offizielle Paketwebseite wurde am 16. November 2026 geprüft und weist CC0 aus.
-Die konkrete Herkunft der verwendeten Ausgabe beruht auf der Angabe des
-Projektbetreibers; ein vollständiger Einzeldateiabgleich mit dem Originalarchiv
-wurde im Rahmen dieser Dokumentation nicht vorgenommen.
-
-Die Modelle werden in der Anwendung zu Gebäuden und Stadtanordnungen zusammengesetzt.
-Quaternius ist der Anbieter dieser Modellressourcen, nicht der Entwickler der
-Lehreroberfläche, Erkennung oder projektspezifischen Gebäude-Baulogik.
-
-### Bedeutung der CC0-Freigabe
-
-CC0 erlaubt die urheberrechtlich erfasste Nutzung, Bearbeitung und Weitergabe auch
-für kommerzielle Zwecke, ohne verpflichtende Namensnennung. Die Quellenangabe hier
-ist bewusst aufgenommen, um die Herkunft nachvollziehbar zu halten.
-
-CC0 enthält keine Garantie und beseitigt nicht automatisch etwaige eigenständige
-Marken-, Patent- oder Persönlichkeitsrechte. Eine Unterstützung oder Empfehlung
-dieser Anwendung durch Quaternius wird nicht behauptet.
-
-### Originalhinweise erhalten
-
-Falls das verwendete Downloadarchiv eine Lizenz-, Quellen- oder Readme-Datei
-enthält, diese unverändert zusätzlich aufbewahren, beispielsweise unter
-`licenses/quaternius-medieval-village/`. Dieser Pfad ist eine Empfehlung; die
-Existenz solcher Dateien wird mit dieser Übersicht nicht behauptet.
-
-Die CC0-Angabe gilt für die tatsächlich vom Paket erfassten Inhalte. Separat
-hinzugefügte Modelle oder Texturen benötigen eine eigene Herkunfts- und Lizenzprüfung.
+Die offizielle Paketwebseite wurde geprüft und weist CC0 aus.
+CC0 erlaubt die urheberrechtlich erfasste Nutzung, Bearbeitung und Weitergabe
+auch für kommerzielle Zwecke, ohne verpflichtende Namensnennung. Die Quellenangabe
+hier ist bewusst aufgenommen, um die Herkunft nachvollziehbar zu halten.
 
 ## 2. Eigener Anwendungscode
 
-Diese Dokumentation legt keine Lizenz für den eigenen Projektcode fest. Die
-Modellfreigabe überträgt sich nicht automatisch auf Python-/GDScript-Code,
-Dokumentation oder sämtliche übrigen Inhalte.
+Der eigene Projektcode ist unter der Custom-Lizenz in `LICENSE` verfügbar:
 
-Vor einer ausdrücklich lizenzierten Veröffentlichung ist die Lizenzentscheidung
-des Rechteinhabers in einer separaten `LICENSE`-Datei zu dokumentieren. Falls bereits
-eine Lizenzdatei existiert, ist diese zu prüfen; diese Übersicht ersetzt sie nicht.
-Aus der bloßen Erreichbarkeit des Repositorys folgt keine hier erteilte allgemeine
-Nutzungserlaubnis für alle Inhalte.
+- Private Nutzung ist frei.
+- Kommerzielle Nutzung erfordert vorherige schriftliche Zustimmung und eine
+  angemessene Aufwandsentschädigung.
+- Bei Weitergabe muss ein Hinweis auf dieses Projekt erhalten bleiben.
+- Kontakt über GitHub: https://github.com/HackerJo/city_project
 
 ## 3. Beispiele, Bilder und Video
 
@@ -76,41 +49,35 @@ Für diese Dateien ist vor Weitergabe sicherzustellen:
 
 Für Fotos oder Video wird mit dieser Datei keine eigenständige CC0-Freigabe behauptet.
 
-## 4. Softwarebestandteile: Prüfung vor dem EXE-Paket
+## 4. Softwarebestandteile: Lizenzen
 
-Die derzeitige Entwicklungsfassung verwendet bzw. benennt folgende Komponenten.
-Die Tabelle ist eine Prüfliste, keine vollständige Lizenzbilanz:
+Die Lizenzen der gebündelten Abhängigkeiten liegen im Ordner
+`licenses/python-dependencies/`:
 
-| Komponente | Verwendung | Vor binärer Weitergabe festzuhalten |
+| Komponente | Lizenzdatei im Repo | Lizenz |
 |---|---|---|
-| Godot Engine | 3D-Viewer und späterer Engine-Export | Version, Lizenztext, erforderliche Drittanbieter-Hinweise des Exports |
-| Python | Interpreter der Entwicklungsfassung, eventuell im Paket gebündelt | Tatsächlich gebündelte Version und Lizenzhinweise |
-| Tcl/Tk | Tk-Oberfläche | Tatsächlich mitgelieferte Laufzeit und Lizenzhinweise |
-| Pillow | Bildvorschau und Bildprüfungen | Version, Lizenz und mitgelieferte native Komponenten |
-| opencv-contrib-python / OpenCV | ArUco-Erkennung und Bildverarbeitung | Wheel-/OpenCV-Version und enthaltene Drittanbieter-Hinweise |
-| NumPy | Verarbeitung von Bild- und Koordinatendaten | Version und Hinweise zu enthaltenen Bibliotheken |
-| ReportLab | Erzeugung der Druck-PDFs | Version; klären, ob im Lehrerausgabepaket tatsächlich enthalten |
-| PyInstaller | Geplantes Buildwerkzeug | Bei Verwendung Version und Bedingungen des Bootloaders berücksichtigen |
+| Python | `python-3.15-64.LICENSE.txt` | PSF License |
+| NumPy | `numpy.LICENSE.txt` | BSD-3-Clause |
+| OpenCV | `opencv.LICENSE.txt` + `opencv.LICENSE-3RD-PARTY.txt` | Apache 2.0 + Drittanbieter-Hinweise |
+| ReportLab | `reportlab.license.txt` | BSD |
 
-Nicht jede Entwicklungsabhängigkeit muss zwingend Bestandteil der Lehrerausgabe
-sein. Maßgeblich ist, was der konkrete Build tatsächlich enthält. Transitive und
-native Abhängigkeiten ebenfalls erfassen; die obige Liste ist nicht abschließend.
+Für die folgenden Komponenten ist die Lizenz online verfügbar (keine lokale
+Datei im Repo, da nicht physisch vorhanden):
 
-### Abschlusskriterien für die Lizenzsammlung
+| Komponente | Lizenz | Online-Link |
+|---|---|---|
+| Tcl/Tk | Tcl/Tk License | http://www.tcl.tk/software/tcltk/license.html |
+| Pillow | MIT-CMU (HPND) | https://github.com/python-pillow/Pillow/blob/main/LICENSE |
+| PyInstaller | GPL mit Bootloader-Ausnahme | https://github.com/pyinstaller/pyinstaller/blob/develop/COPYING.txt |
 
-1. Den getesteten Build samt exakten Abhängigkeitsversionen festhalten.
-2. Lizenz- und Notice-Dateien aus den tatsächlich verwendeten Distributionen sammeln.
-3. Geforderte Hinweise ohne Verkürzung übernehmen und gut auffindbar beilegen.
-4. Originalhinweise nicht durch diese zusammenfassende Markdown-Datei ersetzen.
-5. Einbeziehung in das endgültige Windows-Paket prüfen.
+Godot Engine: MIT-Lizenz, Hinweise sind in der exportierten EXE enthalten.
 
 ## 5. Status
 
 - Bestätigt: offizielle Modellpaket-Webseite weist CC0 aus.
-- Dokumentiert: Nutzung der kostenlosen Ausgabe laut Projektbetreiber.
-- Offen: ausdrückliche Lizenzentscheidung für den eigenen Code.
+- Dokumentiert: Lizenzdateien für Python, NumPy, OpenCV, ReportLab im Repo.
+- Dokumentiert: Online-Lizenzlinks für Tcl/Tk, Pillow, PyInstaller.
+- Dokumentiert: Custom-Lizenz für den eigenen Code in `LICENSE`.
 - Offen: abschließende Rechteprüfung der Beispielmedien.
-- Offen: vollständige versionsbezogene Lizenz-/Notice-Sammlung des Windows-Pakets.
-
-Die erfolgreiche technische Abnahme der Python-Fassung bedeutet nicht, dass diese
-noch offenen Veröffentlichungspunkte bereits erledigt sind.
+- Offen: Prüfung, ob PyInstaller beim Build automatisch Lizenzdateien in
+  `_internal` ablegt; falls ja, sind diese im Release-ZIP enthalten.
