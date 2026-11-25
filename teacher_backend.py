@@ -59,8 +59,15 @@ def prepare_run(project: Path, image: Path, work_home: Path | None = None) -> Pa
 
 
 def find_bundled_detector(project: Path) -> Path | None:
-    candidate = project / "Stadt_Erkennung.exe"
-    return candidate if candidate.is_file() else None
+    candidates = [project / "Stadt_Erkennung.exe"]
+
+    if getattr(sys, "frozen", False):
+        candidates.insert(
+            0,
+            Path(sys.executable).resolve().parent / "Stadt_Erkennung.exe",
+        )
+
+    return next((p for p in candidates if p.is_file()), None)
 
 
 def detector_command(project: Path, image: Path, run: Path) -> list[str]:

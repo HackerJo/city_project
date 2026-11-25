@@ -21,6 +21,13 @@
       "folder": "city04",
       "photo": "Example_City_04.JPEG",
       "description": "Mitgeliefertes Stadtbeispiel: Foto erkennen oder vorbereitete Stadt in 3D erkunden."
+    },
+    {
+      "id": "city05",
+      "title": "Beispielstadt 05",
+      "folder": "city05",
+      "photo": "Example_City_05.JPEG",
+      "description": "Mitgeliefertes Stadtbeispiel: Foto erkennen oder vorbereitete Stadt in 3D erkunden."
     }
   ]
 }

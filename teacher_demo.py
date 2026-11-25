@@ -5,7 +5,12 @@ from pathlib import Path
 import json
 import shutil
 import uuid
-from teacher_backend import read_json, data_home, validate_result
+from teacher_backend import (
+    read_json,
+    data_home,
+    validate_result,
+    find_bundled_detector,
+)
 
 DEMO_VERSION = "0.3.0-dev"
 REQUIRED = ("buildings.json", "city.json", "control.jpg", "layout.json", "rectified_raw.jpg", "rectified.jpg")
@@ -125,8 +130,8 @@ def prepare_demo_run(project: Path, demo: dict, prepared: bool, work_home: Path 
     check_inputs(layout, catalog)
     if prepared:
         check_viewer_catalog(project, catalog)
-    elif not (project / "scripts/detect_city.py").is_file():
-        raise ValueError("scripts/detect_city.py fehlt.")
+    elif not (project / "scripts" / "detect_city.py").is_file() and find_bundled_detector(project) is None:
+        raise ValueError("Weder scripts/detect_city.py noch Stadt_Erkennung.exe gefunden.")
     parent = work_home if work_home is not None else data_home()
     run = parent / "runs" / (datetime.now().strftime("%Y%m%d_%H%M%S") + "_demo_" + uuid.uuid4().hex[:6])
     (run / "input/output").mkdir(parents=True)
