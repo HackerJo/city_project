@@ -211,6 +211,13 @@ func _build_city(city: Dictionary) -> void:
 		var col := int(entry["col"])
 		var row := int(entry["row"])
 		var info: Dictionary = catalog.get(str(entry["key"]), {})
+		# CITYPROJECT_BUILDING_ALIASES_V1
+		var structure := builder.structure_key(str(entry["key"]))
+		if structure != str(entry["key"]):
+			info = info.duplicate()
+			info["style"] = "modular"
+			var source_info: Dictionary = catalog.get(structure, {})
+			info["floors"] = int(source_info.get("floors", info.get("floors", 1)))
 		var label_text := str(entry.get("name", entry["key"]))
 		var cx := (col + w / 2.0) * cell
 		var cz := (row + d / 2.0) * cell

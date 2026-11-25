@@ -1,16 +1,27 @@
 id;key;name_de;name_en;width;depth;model;color;height_m;count;active;floors;style
-1;well;Brunnen;Well;1;1;well.glb;#4a90d9;1.2;2;yes;1;modular
-2;house;Wohnhaus;House;1;1;house.glb;#c97b4a;5;12;yes;2;modular
-3;church;Kirche;Church;2;2;church.glb;#d9d9d9;14;1;yes;3;modular
-4;inn;Gasthaus;Inn;2;1;inn.glb;#a0522d;6;2;yes;2;modular
-5;bakery;Bäcker;Bakery;1;1;bakery.glb;#e8c170;5;3;yes;2;modular
-6;butcher;Metzger;Butcher;1;1;butcher.glb;#b03a3a;5;3;yes;2;modular
-7;market;Marktplatz;Market square;2;2;market.glb;#f0e68c;0.25;1;yes;1;modular
-8;tanner;Gerber;Tanner;1;1;tanner.glb;#6b4f3a;5;2;yes;2;modular
-9;brewery;Brauerei;Brewery;2;1;brewery.glb;#d4a017;7;1;yes;2;modular
-10;smithy;Schmiede;Smithy;1;1;smithy.glb;#555555;5;2;yes;1;modular
-11;stable;Stall;Stable;1;1;stable.glb;#8fbc8f;3.5;3;yes;1;modular
-12;monastery;Kloster;Monastery;3;2;monastery.glb;#c4b69a;9;1;yes;2;modular
-13;town_hall;Rathaus;Town hall;2;2;town_hall.glb;#b87954;9;1;yes;3;modular
-14;guildhall;Zunfthaus;Guildhall;2;2;guildhall.glb;#9874a8;8;1;yes;3;modular
-15;mill;Mühle;Mill;1;2;mill.glb;#c9b477;10;1;yes;3;modular
+1;well;Brunnen;Well;2;2;well.glb;#4a90d9;1.2;2;yes;1;modular
+2;house;Wohnhaus;House;2;2;house.glb;#c97b4a;5;12;yes;2;modular
+3;church;Kirche;Church;5;5;church.glb;#d9d9d9;14;1;yes;3;modular
+4;inn;Gasthaus;Inn;3;2;inn.glb;#a0522d;6;2;yes;2;modular
+5;bakery;Bäcker;Bakery;2;2;bakery.glb;#e8c170;5;3;yes;2;modular
+6;butcher;Metzger;Butcher;2;2;butcher.glb;#b03a3a;5;3;yes;2;modular
+7;market;Marktplatz;Market square;5;5;market.glb;#f0e68c;0.25;1;yes;1;modular
+8;tanner;Gerber;Tanner;2;2;tanner.glb;#6b4f3a;5;2;yes;2;modular
+9;brewery;Brauerei;Brewery;3;2;brewery.glb;#d4a017;7;1;yes;2;modular
+10;smithy;Schmiede;Smithy;2;2;smithy.glb;#555555;5;2;yes;1;modular
+11;stable;Stall;Stable;3;2;stable.glb;#8fbc8f;3.5;3;yes;1;modular
+12;monastery;Kloster;Monastery;7;7;monastery.glb;#c4b69a;9;1;yes;2;modular
+13;town_hall;Rathaus;Town hall;4;4;town_hall.glb;#b87954;9;1;yes;2;modular
+14;guildhall;Zunfthaus;Guildhall;4;4;guildhall.glb;#9874a8;8;1;yes;2;modular
+15;mill;Mühle;Mill;2;3;mill.glb;#c9b477;10;1;yes;3;modular
+16;courthouse;Gerichtshaus;Courthouse;2;3;town_hall.glb;#2c3e70;9;1;yes;2;modular
+17;synagogue;Synagoge;Synagogue;3;3;house.glb;#d9c9a3;7;1;yes;2;modular
+18;hospital;Spital;Hospital;2;3;monastery.glb;#e8e8e8;8;1;yes;2;modular
+19;weaving;Weberei;Weaving mill;2;2;house.glb;#9b59b6;5;2;yes;2;modular
+20;dyeing;Färberei;Dye house;2;2;house.glb;#3498db;5;2;yes;2;modular
+21;pottery;Töpferei;Pottery;2;2;house.glb;#8d6e63;5;2;yes;1;modular
+22;tailoring;Schneiderei;Tailor shop;2;2;house.glb;#27ae60;5;2;yes;2;modular
+23;warehouse;Lagerhaus;Warehouse;2;3;stable.glb;#7f8c8d;6;2;yes;1;modular
+24;armory;Waffenlager;Armory;2;2;stable.glb;#34495e;5;1;yes;1;modular
+25;cemetery;Friedhof;Cemetery;3;3;market.glb;#2e7d32;0.25;1;yes;1;modular
+26;art_smithy;Kunstschmiede;Art smithy;2;2;smithy.glb;#b8860b;5;1;yes;1;modular

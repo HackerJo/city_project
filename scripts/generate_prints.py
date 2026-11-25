@@ -187,6 +187,8 @@ def make_cards(project: Project, path: Path):
             draw_card(project, c, page_h, px, py, b)
         c.setFillColorRGB(0.45, 0.45, 0.45)
         text_centered(c, page_h, page_w / 2, page_h - 4, t("print_hint"), 7)
+        if page is pages[-1]:
+            draw_corner_marker_cutouts(project, c, page_h)
         c.showPage()
     c.save()
     return len(items), len(pages)
@@ -236,6 +238,23 @@ def generate(project: Project) -> Path:
     write_data_files(project, out_dir)
     print(t("cards_summary", cards=cards, pages=pages))
     return print_dir
+
+
+
+
+def draw_corner_marker_cutouts(project: Project, c, page_h) -> None:
+    """Draw the four corner markers as separate cut-outs on the last card page."""
+    s = project.settings
+    size = s.corner_marker_mm
+    labels = {s.corner_ids[0]: "OL (oben links)", s.corner_ids[1]: "OR (oben rechts)",
+              s.corner_ids[2]: "UR (unten rechts)", s.corner_ids[3]: "UL (unten links)"}
+    x = CARD_SHEET_MARGIN_MM
+    y = page_h - CARD_SHEET_MARGIN_MM - size - 6
+    for marker_id in s.corner_ids:
+        draw_marker(c, page_h, x, y, size, marker_cells(project, marker_id))
+        c.setFillColorRGB(0.45, 0.45, 0.45)
+        text_centered(c, page_h, x + size / 2, y + size + 2, labels[marker_id], 6)
+        x += size + 8
 
 
 def main() -> int:

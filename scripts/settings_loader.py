@@ -20,7 +20,7 @@ COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 KEY_RE = re.compile(r"^[a-z0-9_]+$")
 
 DEFAULTS = {
-    "language": "de", "paper": "A3", "field_size_mm": "30", "columns": "auto", "rows": "auto",
+    "language": "de", "paper": "A3", "paper_w_mm": "740", "paper_h_mm": "520", "field_size_mm": "30", "columns": "auto", "rows": "auto",
     "world_meters_per_field": "6", "start_view": "walk", "path_color": "#b8a58a",
     "meadow_color": "#5a9a4d", "min_marker_mm": "15", "sheet_border_mm": "28",
     "corner_marker_mm": "20", "corner_offset_mm": "4", "corner_marker_ids": "46,47,48,49",
@@ -180,8 +180,12 @@ def load_settings(path: Path, messages: list) -> Settings:
     language = _choice(values["language"], "language", ["de", "en"], messages, "de")
     set_language(language)
 
-    paper = _choice(values["paper"], "paper", list(PAPERS_MM), messages, "A3")
-    paper_w, paper_h = PAPERS_MM[paper]
+    paper = _choice(values["paper"], "paper", list(PAPERS_MM) + ["custom"], messages, "A3")
+    if paper == "custom":
+        paper_w = _num(values["paper_w_mm"], "paper_w_mm", messages, 740.0)
+        paper_h = _num(values["paper_h_mm"], "paper_h_mm", messages, 520.0)
+    else:
+        paper_w, paper_h = PAPERS_MM[paper]
     field_mm = _num(values["field_size_mm"], "field_size_mm", messages, 30.0)
     border = _num(values["sheet_border_mm"], "sheet_border_mm", messages, 28.0)
 

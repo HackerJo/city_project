@@ -400,6 +400,7 @@ func has_role(role: String) -> bool:
 
 
 func can_build(key: String) -> bool:
+	key = structure_key(key)
 	if key == "market":
 		return parts.has("market_corner")
 	if key == "well":
@@ -409,10 +410,12 @@ func can_build(key: String) -> bool:
 
 # Market and well stand on path tiles (the fields are not blocked for the floor).
 func leaves_floor_open(key: String) -> bool:
+	key = structure_key(key)
 	return (key == "market" and parts.has("market_corner")) or (key == "well" and parts.has("well_stairs"))
 
 
 func build_building(key: String, parent: Node3D, centre: Vector2, lx: float, lz: float, floors: int, door_side: String) -> Dictionary:
+	key = structure_key(key)
 	if key == "church":
 		return build_church(parent, centre, lx, floors, door_side)
 	if key == "monastery":
@@ -733,3 +736,31 @@ func build_town_hall(parent: Node3D, centre: Vector2, lx: float, lz: float, floo
 		_public_collision(centre, rotation, Vector3(0.0, tower_top / 2.0, tower_z), Vector3(tw, tower_top, tw))]
 	return {"wall_top": body_top, "height": maxf(height, main_ridge), "colliders": colliders}
 
+
+
+# CITYPROJECT_BUILDING_ALIASES_V1
+func structure_key(key: String) -> String:
+	match key:
+		"courthouse":
+			return "mill"
+		"synagogue":
+			return "house"
+		"hospital":
+			return "mill"
+		"weaving":
+			return "house"
+		"dyeing":
+			return "house"
+		"pottery":
+			return "house"
+		"tailoring":
+			return "house"
+		"armory":
+			return "house"
+		"warehouse":
+			return "mill"
+		"cemetery":
+			return "market"
+		"art_smithy":
+			return "smithy"
+	return key

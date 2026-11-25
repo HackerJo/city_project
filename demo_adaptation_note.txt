@@ -1,0 +1,15 @@
+# Demo-Städte anpassen (city02, city03, city04)
+# =============================================
+# Da die Demos fotobasiert sind, müssen nach der Umstellung auf 2-cm-Kästchen
+# und die neuen Gebäudegrößen die Fotos neu aufgenommen werden.
+#
+# Bis dahin können die city.json-Dateien der Demos mit folgendem Skript
+# auf das neue Raster (37x26) umgerechnet werden:
+#
+#   python scripts/relayout_demo.py <alte_city.json> <neue_city.json>
+#
+# Das Skript packt die Gebäude greedy (nach Fläche absteigend) auf das neue Raster.
+# Die Fotos passen dann noch nicht zu den neuen Kärtchen – sie müssen neu aufgenommen werden.
+#
+# Alternativ: Demos vorerst auf "block"-Stil umstellen (nur 3D-Blöcke, keine modular-Teile),
+# damit der Viewer ohne neue Fotos funktioniert.

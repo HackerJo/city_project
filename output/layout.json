@@ -1,15 +1,15 @@
 {
-  "paper": "A3",
+  "paper": "custom",
   "paper_mm": {
-    "width": 420.0,
-    "height": 297.0
+    "width": 788.0,
+    "height": 568.0
   },
-  "field_mm": 30.0,
-  "columns": 12,
-  "rows": 8,
+  "field_mm": 20.0,
+  "columns": 37,
+  "rows": 26,
   "grid_origin_mm": {
-    "x": 30.0,
-    "y": 28.5
+    "x": 24.0,
+    "y": 24.0
   },
   "aruco_dict": "DICT_4X4_50",
   "corner_markers_mm": {
@@ -18,16 +18,16 @@
       "y": 14.0
     },
     "47": {
-      "x": 406.0,
+      "x": 774.0,
       "y": 14.0
     },
     "48": {
-      "x": 406.0,
-      "y": 283.0
+      "x": 774.0,
+      "y": 554.0
     },
     "49": {
       "x": 14.0,
-      "y": 283.0
+      "y": 554.0
     }
   },
   "convention": "marker top edge = door side; empty field = path; outside grid = meadow"
