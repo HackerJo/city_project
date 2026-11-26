@@ -97,3 +97,10 @@ python check_demo_examples.py
 - Entwicklerdokumentation: [Readme.Dev.md](Readme.Dev.md)
 - Bedienung: [controls.md](controls.md)
 - Lizenzstatus und Quellen: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)
+
+
+
+## Unterstützung
+
+Das Projekt ist kostenlos nutzbar. Wer es unterstützen möchte, findet den
+Sponsor-Button oben im Repository oder direkt unter https://ko-fi.com/hackerjo87355.
