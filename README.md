@@ -2,6 +2,23 @@
 
 Foto von ArUco-Gebäudekärtchen wird in eine Stadtdaten-Datei übersetzt und in Godot dargestellt.
 
+## So funktioniert es
+
+Gebäudekärtchen mit ArUco-Markern werden auf ein Raster gelegt und fotografiert.
+Die Software erkennt Lage, Größe und Türrichtung und baut daraus eine begehbare 3D-Stadt.
+
+### 1. Foto mit den Kärtchen
+
+![Beispielfoto: Kärtchen auf dem Raster (Beispielstadt 05)](examples/city05/Example_City_05.JPEG)
+
+### 2. Ergebnis in 3D
+
+![3D-Ansicht der erkannten Stadt, Beispiel 1](examples/img/ExampleCity_3D_01.png)
+
+![3D-Ansicht der erkannten Stadt, Beispiel 2](examples/img/ExampleCity_3D_02.png)
+
+![Vogelperspektive der erkannten Stadt](examples/img/ExampleCity_BirdView.png)
+
 ## Schnellstart (Entwicklung)
 
 1. Abhängigkeiten installieren:
