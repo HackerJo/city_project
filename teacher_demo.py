@@ -129,7 +129,7 @@ def prepare_demo_run(project: Path, demo: dict, prepared: bool, work_home: Path 
     layout, catalog = read_json(folder / "layout.json"), read_json(folder / "buildings.json")
     check_inputs(layout, catalog)
     if prepared:
-        check_viewer_catalog(project, catalog)
+        pass  # CITYPROJECT_RUN_CATALOG_V1: the demo is shown with its own catalogue
     elif not (project / "scripts" / "detect_city.py").is_file() and find_bundled_detector(project) is None:
         raise ValueError("Weder scripts/detect_city.py noch Stadt_Erkennung.exe gefunden.")
     parent = work_home if work_home is not None else data_home()

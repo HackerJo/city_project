@@ -171,7 +171,7 @@
       "color": "#c4b69a",
       "height_m": 9.0,
       "floors": 2,
-      "style": "block"
+      "style": "modular"
     },
     {
       "id": 13,
@@ -185,7 +185,7 @@
       "color": "#b87954",
       "height_m": 9.0,
       "floors": 2,
-      "style": "block"
+      "style": "modular"
     },
     {
       "id": 14,
@@ -199,7 +199,7 @@
       "color": "#9874a8",
       "height_m": 8.0,
       "floors": 2,
-      "style": "block"
+      "style": "modular"
     },
     {
       "id": 15,
@@ -227,7 +227,7 @@
       "color": "#2c3e70",
       "height_m": 9.0,
       "floors": 2,
-      "style": "block"
+      "style": "modular"
     },
     {
       "id": 17,
@@ -255,7 +255,7 @@
       "color": "#e8e8e8",
       "height_m": 8.0,
       "floors": 2,
-      "style": "block"
+      "style": "modular"
     },
     {
       "id": 19,

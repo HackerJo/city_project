@@ -93,6 +93,14 @@ func _city_path() -> String:
 	return DEFAULT_CITY_PATH
 
 
+# CITYPROJECT_RUN_CATALOG_V1: optional 2nd argument = catalogue of this run
+func _catalog_path() -> String:
+	var args := OS.get_cmdline_user_args()
+	if args.size() > 1:
+		return args[1]
+	return BUILDINGS_PATH
+
+
 func _load_json(path: String):
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:
@@ -101,7 +109,7 @@ func _load_json(path: String):
 
 
 func _load_catalog() -> void:
-	var data = _load_json(BUILDINGS_PATH)
+	var data = _load_json(_catalog_path())
 	if data == null or not (data is Dictionary):
 		return
 	meters_per_field = float(data.get("world_meters_per_field", meters_per_field))
